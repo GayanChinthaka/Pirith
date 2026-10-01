@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -143,11 +144,12 @@ fun AboutSettingsScreen(
             Spacer(Modifier.height(14.dp))
 
             // Source Attribution Card (pitaka.lk & tripitaka.online & namo.lk)
-            ElevatedCard(
+            Card(
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.elevatedCardColors(
+                colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                 ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
@@ -212,11 +214,12 @@ private fun AboutInfoCard(
     icon: ImageVector,
     onClick: (() -> Unit)? = null
 ) {
-    ElevatedCard(
+    Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.elevatedCardColors(
+        colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)

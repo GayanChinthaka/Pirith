@@ -110,11 +110,12 @@ fun UpdaterSettingsScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Hero Status Card (Exact Mixora style)
-            ElevatedCard(
+            Card(
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.elevatedCardColors(
+                colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                 ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateContentSize()
