@@ -42,6 +42,7 @@ class HomeViewModel(
 
     private val _allSuttas = repository.getAllSuttas()
     private val _customCollections = repository.getCustomCollections()
+    private val _tabOrder = repository.getTabOrder()
 
     private val _matchingVerseSuttaIds = _searchQuery.flatMapLatest { query ->
         if (query.isBlank()) flowOf(emptyList()) else repository.searchSuttaIdsByVerseContent(query.trim())
@@ -59,10 +60,44 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = combine(
         _allSuttas,
         _customCollections,
+        _tabOrder,
         _filterFlow
-    ) { suttas, customCollections, filter ->
+    ) { suttas, customCollections, tabOrder, filter ->
         val trimmedQuery = filter.query.trim()
         val customCollection = customCollections.find { "coll_${it.id}" == filter.category || it.name == filter.category }
+
+        // Build default collection items
+        val defaultItems = standardCategories.map { catName ->
+            val count = if (catName == "සියල්ල") suttas.size else suttas.count { it.category == catName }
+            com.pokerlanka.pirith.domain.model.CollectionItem(
+                key = catName,
+                name = catName,
+                isDefault = true,
+                suttaCount = count
+            )
+        }
+
+        // Build custom collection items
+        val customItems = customCollections.map { coll ->
+            com.pokerlanka.pirith.domain.model.CollectionItem(
+                key = "coll_${coll.id}",
+                name = coll.name,
+                isDefault = false,
+                suttaCount = coll.suttaIds.size,
+                customCollection = coll
+            )
+        }
+
+        // Combine and order according to tabOrder preferences
+        val allItemsMap = (defaultItems + customItems).associateBy { it.key }
+        val orderedKeys = if (tabOrder.isNotEmpty()) {
+            val validSavedKeys = tabOrder.filter { allItemsMap.containsKey(it) }
+            val missingKeys = allItemsMap.keys.filter { !validSavedKeys.contains(it) }
+            validSavedKeys + missingKeys
+        } else {
+            allItemsMap.keys.toList()
+        }
+        val orderedCollectionItems = orderedKeys.mapNotNull { allItemsMap[it] }
 
         val filtered = suttas.filter { sutta ->
             val matchesCategory = when {
@@ -87,6 +122,7 @@ class HomeViewModel(
             suttas = filtered,
             categories = standardCategories,
             customCollections = customCollections,
+            orderedCollections = orderedCollectionItems,
             selectedCategory = filter.category,
             searchQuery = filter.query,
             onlyFavorites = filter.onlyFavorites,

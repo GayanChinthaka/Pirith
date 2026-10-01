@@ -40,6 +40,7 @@ class UserPreferencesRepository(private val context: Context) {
         val APP_THEME = stringPreferencesKey("app_theme")
         val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         val CUSTOM_COLLECTIONS = stringPreferencesKey("custom_collections_json")
+        val TAB_ORDER = stringPreferencesKey("tab_order_json")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -204,6 +205,25 @@ class UserPreferencesRepository(private val context: Context) {
                 }
                 prefs[Keys.CUSTOM_COLLECTIONS] = Json.encodeToString(updated)
             } catch (_: Exception) {}
+        }
+    }
+
+    val tabOrderFlow: Flow<List<String>> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { prefs ->
+            val jsonStr = prefs[Keys.TAB_ORDER] ?: return@map emptyList()
+            try {
+                Json.decodeFromString<List<String>>(jsonStr)
+            } catch (_: Exception) {
+                emptyList()
+            }
+        }
+
+    suspend fun updateTabOrder(tabKeys: List<String>) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.TAB_ORDER] = Json.encodeToString(tabKeys)
         }
     }
 }

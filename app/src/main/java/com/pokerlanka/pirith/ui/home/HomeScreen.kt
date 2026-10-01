@@ -183,57 +183,36 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 1. Standard categories
-                items(uiState.categories) { category ->
-                    val isSelected = category == uiState.selectedCategory
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { onCategorySelected(category) },
-                        label = {
-                            Text(
-                                text = category,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                            labelColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                }
-
-                // 2. Custom User Collections
+                // Dynamic Ordered Collections (both default categories and custom collections in customized order)
                 items(
-                    items = uiState.customCollections,
-                    key = { it.id }
-                ) { collection ->
-                    val collKey = "coll_${collection.id}"
-                    val isSelected = uiState.selectedCategory == collKey || uiState.selectedCategory == collection.name
+                    items = uiState.orderedCollections,
+                    key = { it.key }
+                ) { item ->
+                    val isSelected = uiState.selectedCategory == item.key || uiState.selectedCategory == item.name
                     FilterChip(
                         selected = isSelected,
-                        onClick = { onCategorySelected(collKey) },
+                        onClick = { onCategorySelected(item.key) },
                         label = {
                             Text(
-                                text = collection.name,
+                                text = item.name,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                             )
                         },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { collectionToDelete = collection },
-                                modifier = Modifier.size(20.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.DeleteOutline,
-                                    contentDescription = "Delete ${collection.name}",
-                                    modifier = Modifier.size(16.dp),
-                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                        trailingIcon = if (!item.isDefault && item.customCollection != null) {
+                            {
+                                IconButton(
+                                    onClick = { collectionToDelete = item.customCollection },
+                                    modifier = Modifier.size(20.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.DeleteOutline,
+                                        contentDescription = "Delete ${item.name}",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
-                        },
+                        } else null,
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
                             selectedLabelColor = MaterialTheme.colorScheme.onPrimary,

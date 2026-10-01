@@ -64,5 +64,11 @@ class PirithRepositoryImpl(
 
     override suspend fun toggleSuttaInCollection(collectionId: String, suttaId: Int) =
         userPreferencesRepository.toggleSuttaInCollection(collectionId, suttaId)
+
+    override fun getTabOrder(): Flow<List<String>> =
+        userPreferencesRepository.tabOrderFlow
+
+    override suspend fun updateTabOrder(tabKeys: List<String>) =
+        userPreferencesRepository.updateTabOrder(tabKeys)
 }
 

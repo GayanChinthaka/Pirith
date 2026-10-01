@@ -1,7 +1,6 @@
 package com.pokerlanka.pirith.ui.settings
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,10 +22,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bookmarks
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -56,7 +55,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.pokerlanka.pirith.domain.model.CollectionItem
 import com.pokerlanka.pirith.domain.model.SuttaCollection
 import org.koin.androidx.compose.koinViewModel
 
@@ -66,7 +67,7 @@ fun CollectionsSettingsScreen(
     navController: NavController,
     viewModel: SettingsViewModel = koinViewModel()
 ) {
-    val collections by viewModel.customCollections.collectAsState()
+    val allCollections by viewModel.allCollections.collectAsState()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var createName by remember { mutableStateOf("") }
@@ -84,11 +85,11 @@ fun CollectionsSettingsScreen(
                 title = {
                     Column {
                         Text(
-                            text = "පිරිත් එකතු (Collections)",
+                            text = "පිරිත් එකතු (Collections / Categories)",
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "එකතු පෙළගැස්වීම සහ කළමනාකරණය",
+                            text = "සියලුම ප්‍රවර්ග සහ එකතු පෙළගැස්වීම",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -119,166 +120,126 @@ fun CollectionsSettingsScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        if (collections.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                Text(
+                    text = "ප්‍රධාන තිරයේ Tabs දිස්වන අනුපිළිවෙල වෙනස් කිරීමට ඊතල (⬆ ⬇) භාවිතා කරන්න:",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 6.dp, start = 4.dp)
+                )
+            }
+
+            itemsIndexed(
+                items = allCollections,
+                key = { _, item -> item.key }
+            ) { index, item ->
+                val shape = when {
+                    allCollections.size == 1 -> RoundedCornerShape(20.dp)
+                    index == 0 -> RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
+                    index == allCollections.size - 1 -> RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
+                    else -> RoundedCornerShape(6.dp)
+                }
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = shape,
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                    )
+                        containerColor = if (item.isDefault) {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+                        }
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                            contentAlignment = Alignment.Center
+                        // Reorder Arrows (Up / Down)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Bookmarks,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                            IconButton(
+                                onClick = { viewModel.moveCollection(index, index - 1) },
+                                enabled = index > 0,
                                 modifier = Modifier.size(28.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "තවම ඔබගේ එකතු නොමැත",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "ඔබට අවශ්‍ය පිරිත් වෙන වෙනම කාණ්ඩ කර තබා ගැනීමට පහත බොත්තම ඔබා නව එකතුවක් සාදන්න.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
-                        Button(
-                            onClick = {
-                                createName = ""
-                                createError = null
-                                showCreateDialog = true
-                            }
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = null)
-                            Spacer(Modifier.width(6.dp))
-                            Text("නව එකතුවක් සාදන්න")
-                        }
-                    }
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                item {
-                    Text(
-                        text = "එකතු අනුපිළිවෙල වෙනස් කිරීමට ඊතල (⬆ ⬇) භාවිතා කරන්න:",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
-                    )
-                }
-
-                itemsIndexed(
-                    items = collections,
-                    key = { _, item -> item.id }
-                ) { index, coll ->
-                    val shape = when {
-                        collections.size == 1 -> RoundedCornerShape(20.dp)
-                        index == 0 -> RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
-                        index == collections.size - 1 -> RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
-                        else -> RoundedCornerShape(6.dp)
-                    }
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = shape,
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Reorder Arrows (Up / Down)
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
                             ) {
-                                IconButton(
-                                    onClick = { viewModel.moveCollection(index, index - 1) },
-                                    enabled = index > 0,
-                                    modifier = Modifier.size(28.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.KeyboardArrowUp,
-                                        contentDescription = "Move up",
-                                        tint = if (index > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-                                    )
-                                }
-                                IconButton(
-                                    onClick = { viewModel.moveCollection(index, index + 1) },
-                                    enabled = index < collections.size - 1,
-                                    modifier = Modifier.size(28.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.KeyboardArrowDown,
-                                        contentDescription = "Move down",
-                                        tint = if (index < collections.size - 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-                                    )
-                                }
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowUp,
+                                    contentDescription = "Move up",
+                                    tint = if (index > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                )
                             }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            // Collection Name and item count
-                            Column(
-                                modifier = Modifier.weight(1f)
+                            IconButton(
+                                onClick = { viewModel.moveCollection(index, index + 1) },
+                                enabled = index < allCollections.size - 1,
+                                modifier = Modifier.size(28.dp)
                             ) {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Move down",
+                                    tint = if (index < allCollections.size - 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        // Type Badge & Title
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = coll.name,
+                                    text = item.name,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "${coll.suttaIds.size} පිරිත් අඩංගුයි",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (item.isDefault) {
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                    } else {
+                                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
+                                    }
+                                ) {
+                                    Text(
+                                        text = if (item.isDefault) "පෙරනිමි" else "මගේ එකතුවක්",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                        color = if (item.isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                             }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "${item.suttaCount} පිරිත් අඩංගුයි",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
 
+                        // Custom collection actions: Rename and Delete
+                        if (!item.isDefault && item.customCollection != null) {
                             // Rename Button
                             IconButton(
                                 onClick = {
-                                    collectionToRename = coll
-                                    renameValue = coll.name
+                                    collectionToRename = item.customCollection
+                                    renameValue = item.customCollection.name
                                     renameError = null
                                 }
                             ) {
@@ -292,7 +253,7 @@ fun CollectionsSettingsScreen(
                             // Delete Button
                             IconButton(
                                 onClick = {
-                                    collectionToDelete = coll
+                                    collectionToDelete = item.customCollection
                                 }
                             ) {
                                 Icon(
@@ -301,13 +262,26 @@ fun CollectionsSettingsScreen(
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }
+                        } else {
+                            // System default lock indicator
+                            Box(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Default category",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
                     }
                 }
+            }
 
-                item {
-                    Spacer(modifier = Modifier.height(80.dp))
-                }
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
@@ -350,7 +324,7 @@ fun CollectionsSettingsScreen(
                     onClick = {
                         val trimmed = createName.trim()
                         if (trimmed.isNotBlank()) {
-                            if (collections.any { it.name.equals(trimmed, ignoreCase = true) }) {
+                            if (allCollections.any { it.name.equals(trimmed, ignoreCase = true) }) {
                                 createError = "මෙම නමින් එකතුවක් දැනටමත් පවතී"
                             } else {
                                 viewModel.createCollection(trimmed) { success ->
@@ -414,7 +388,7 @@ fun CollectionsSettingsScreen(
                     onClick = {
                         val trimmed = renameValue.trim()
                         if (trimmed.isNotBlank()) {
-                            if (collections.any { it.id != coll.id && it.name.equals(trimmed, ignoreCase = true) }) {
+                            if (allCollections.any { it.key != "coll_${coll.id}" && it.name.equals(trimmed, ignoreCase = true) }) {
                                 renameError = "මෙම නමින් එකතුවක් දැනටමත් පවතී"
                             } else {
                                 viewModel.renameCollection(coll.id, trimmed) { success ->
