@@ -2,6 +2,7 @@ package com.pokerlanka.pirith.ui.settings
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +23,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
@@ -37,6 +42,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -44,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.pokerlanka.pirith.domain.model.CollectionItem
+import com.pokerlanka.pirith.domain.model.Sutta
 import com.pokerlanka.pirith.domain.model.SuttaCollection
 import org.koin.androidx.compose.koinViewModel
 
@@ -68,6 +76,7 @@ fun CollectionsSettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val allCollections by viewModel.allCollections.collectAsState()
+    val allSuttas by viewModel.allSuttas.collectAsState()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var createName by remember { mutableStateOf("") }
@@ -78,6 +87,10 @@ fun CollectionsSettingsScreen(
     var renameError by remember { mutableStateOf<String?>(null) }
 
     var collectionToDelete by remember { mutableStateOf<SuttaCollection?>(null) }
+
+    // Bottom sheet state for reordering suttas inside a custom collection
+    var managingCollectionSuttas by remember { mutableStateOf<SuttaCollection?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         topBar = {
@@ -148,7 +161,15 @@ fun CollectionsSettingsScreen(
                 }
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (!item.isDefault && item.customCollection != null) {
+                                Modifier.clickable {
+                                    managingCollectionSuttas = item.customCollection
+                                }
+                            } else Modifier
+                        ),
                     shape = shape,
                     colors = CardDefaults.cardColors(
                         containerColor = if (item.isDefault) {
@@ -227,14 +248,27 @@ fun CollectionsSettingsScreen(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "${item.suttaCount} පිරිත් අඩංගුයි",
+                                text = if (!item.isDefault) "${item.suttaCount} පිරිත් • පිළිවෙල වෙනස් කිරීමට තට්ටු කරන්න" else "${item.suttaCount} පිරිත් අඩංගුයි",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
-                        // Custom collection actions: Rename and Delete
+                        // Custom collection actions: Sutta order button, Rename and Delete
                         if (!item.isDefault && item.customCollection != null) {
+                            // Reorder Suttas Button
+                            IconButton(
+                                onClick = {
+                                    managingCollectionSuttas = item.customCollection
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FormatListNumbered,
+                                    contentDescription = "Reorder suttas",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
                             // Rename Button
                             IconButton(
                                 onClick = {
@@ -246,7 +280,7 @@ fun CollectionsSettingsScreen(
                                 Icon(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = "Rename",
-                                    tint = MaterialTheme.colorScheme.primary
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
 
@@ -282,6 +316,164 @@ fun CollectionsSettingsScreen(
 
             item {
                 Spacer(modifier = Modifier.height(80.dp))
+            }
+        }
+    }
+
+    // ModalBottomSheet: Reorder Suttas within a Custom Collection
+    managingCollectionSuttas?.let { targetColl ->
+        // Keep updated state from allCollections or customCollections
+        val currentColl = allCollections.find { it.key == "coll_${targetColl.id}" }?.customCollection ?: targetColl
+        val suttasMap = remember(allSuttas) { allSuttas.associateBy { it.id } }
+        val collectionSuttas = currentColl.suttaIds.mapNotNull { suttasMap[it] }
+
+        ModalBottomSheet(
+            onDismissRequest = { managingCollectionSuttas = null },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = currentColl.name,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "එකතුව තුළ පිරිත් අනුපිළිවෙල (⬆ ⬇)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = { managingCollectionSuttas = null }) {
+                        Icon(Icons.Default.Close, contentDescription = "Close")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (collectionSuttas.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 36.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "මෙම එකතුවට තවම පිරිත් කිසිවක් එක් කර නැත.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(380.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        itemsIndexed(
+                            items = collectionSuttas,
+                            key = { _, sutta -> sutta.id }
+                        ) { suttaIndex, sutta ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Sutta Index Badge
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "${suttaIndex + 1}",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(12.dp))
+
+                                    // Titles
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = sutta.titleSinhala,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontWeight = FontWeight.Medium,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = sutta.titlePali,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    // Up/Down arrows to reorder within collection
+                                    IconButton(
+                                        onClick = {
+                                            viewModel.moveSuttaInCollection(
+                                                collectionId = currentColl.id,
+                                                fromIndex = suttaIndex,
+                                                toIndex = suttaIndex - 1
+                                            )
+                                        },
+                                        enabled = suttaIndex > 0,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.KeyboardArrowUp,
+                                            contentDescription = "Move up",
+                                            tint = if (suttaIndex > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = {
+                                            viewModel.moveSuttaInCollection(
+                                                collectionId = currentColl.id,
+                                                fromIndex = suttaIndex,
+                                                toIndex = suttaIndex + 1
+                                            )
+                                        },
+                                        enabled = suttaIndex < collectionSuttas.size - 1,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.KeyboardArrowDown,
+                                            contentDescription = "Move down",
+                                            tint = if (suttaIndex < collectionSuttas.size - 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }

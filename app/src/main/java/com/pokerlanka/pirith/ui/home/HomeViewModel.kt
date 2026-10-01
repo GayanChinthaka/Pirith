@@ -118,8 +118,16 @@ class HomeViewModel(
             matchesCategory && matchesFavorite && matchesSearch
         }
 
+        // When viewing a custom collection without search, preserve the exact custom order of suttaIds
+        val sortedList = if (customCollection != null && trimmedQuery.isBlank()) {
+            val orderMap = customCollection.suttaIds.withIndex().associate { it.value to it.index }
+            filtered.sortedBy { orderMap[it.id] ?: Int.MAX_VALUE }
+        } else {
+            filtered
+        }
+
         HomeUiState(
-            suttas = filtered,
+            suttas = sortedList,
             categories = standardCategories,
             customCollections = customCollections,
             orderedCollections = orderedCollectionItems,

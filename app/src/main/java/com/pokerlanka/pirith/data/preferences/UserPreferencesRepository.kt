@@ -208,6 +208,23 @@ class UserPreferencesRepository(private val context: Context) {
         }
     }
 
+    suspend fun updateSuttasOrderInCollection(collectionId: String, newSuttaIds: List<Int>) {
+        context.dataStore.edit { prefs ->
+            val jsonStr = prefs[Keys.CUSTOM_COLLECTIONS] ?: return@edit
+            try {
+                val currentList = Json.decodeFromString<List<SuttaCollection>>(jsonStr)
+                val updated: List<SuttaCollection> = currentList.map { coll ->
+                    if (coll.id == collectionId) {
+                        coll.copy(suttaIds = newSuttaIds)
+                    } else {
+                        coll
+                    }
+                }
+                prefs[Keys.CUSTOM_COLLECTIONS] = Json.encodeToString(updated)
+            } catch (_: Exception) {}
+        }
+    }
+
     val tabOrderFlow: Flow<List<String>> = context.dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences()) else throw exception

@@ -43,6 +43,13 @@ class SettingsViewModel(
             initialValue = emptyList()
         )
 
+    val allSuttas: StateFlow<List<com.pokerlanka.pirith.domain.model.Sutta>> = pirithRepository.getAllSuttas()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     val allCollections: StateFlow<List<CollectionItem>> = combine(
         pirithRepository.getAllSuttas(),
         preferencesRepository.customCollectionsFlow,
@@ -132,6 +139,18 @@ class SettingsViewModel(
             val newKeys = current.map { it.key }
             viewModelScope.launch {
                 preferencesRepository.updateTabOrder(newKeys)
+            }
+        }
+    }
+
+    fun moveSuttaInCollection(collectionId: String, fromIndex: Int, toIndex: Int) {
+        val coll = customCollections.value.find { it.id == collectionId } ?: return
+        val currentSuttaIds = coll.suttaIds.toMutableList()
+        if (fromIndex in currentSuttaIds.indices && toIndex in currentSuttaIds.indices && fromIndex != toIndex) {
+            val moved = currentSuttaIds.removeAt(fromIndex)
+            currentSuttaIds.add(toIndex, moved)
+            viewModelScope.launch {
+                pirithRepository.updateSuttasOrderInCollection(collectionId, currentSuttaIds)
             }
         }
     }

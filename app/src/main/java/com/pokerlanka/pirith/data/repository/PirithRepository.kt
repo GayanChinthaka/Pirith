@@ -22,6 +22,7 @@ interface PirithRepository {
     suspend fun updateCollectionsOrder(reorderedList: List<com.pokerlanka.pirith.domain.model.SuttaCollection>)
     suspend fun deleteCustomCollection(collectionId: String)
     suspend fun toggleSuttaInCollection(collectionId: String, suttaId: Int)
+    suspend fun updateSuttasOrderInCollection(collectionId: String, newSuttaIds: List<Int>)
 
     fun getTabOrder(): Flow<List<String>>
     suspend fun updateTabOrder(tabKeys: List<String>)
