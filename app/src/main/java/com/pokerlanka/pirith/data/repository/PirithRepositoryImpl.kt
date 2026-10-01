@@ -50,8 +50,14 @@ class PirithRepositoryImpl(
     override fun getCustomCollections(): Flow<List<SuttaCollection>> =
         userPreferencesRepository.customCollectionsFlow
 
-    override suspend fun createCustomCollection(name: String): SuttaCollection =
+    override suspend fun createCustomCollection(name: String): SuttaCollection? =
         userPreferencesRepository.createCollection(name)
+
+    override suspend fun renameCustomCollection(collectionId: String, newName: String): Boolean =
+        userPreferencesRepository.renameCollection(collectionId, newName)
+
+    override suspend fun updateCollectionsOrder(reorderedList: List<SuttaCollection>) =
+        userPreferencesRepository.updateCollectionsOrder(reorderedList)
 
     override suspend fun deleteCustomCollection(collectionId: String) =
         userPreferencesRepository.deleteCollection(collectionId)

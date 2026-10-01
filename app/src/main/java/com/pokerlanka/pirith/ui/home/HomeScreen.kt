@@ -359,6 +359,8 @@ fun HomeScreen(
 
     // Create Collection Dialog
     if (showCreateCollectionDialog) {
+        var nameError by remember { mutableStateOf<String?>(null) }
+
         AlertDialog(
             onDismissRequest = { showCreateCollectionDialog = false },
             title = {
@@ -377,8 +379,13 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = newCollectionName,
-                        onValueChange = { newCollectionName = it },
+                        onValueChange = {
+                            newCollectionName = it
+                            nameError = null
+                        },
                         label = { Text("එකතුවේ නම") },
+                        isError = nameError != null,
+                        supportingText = nameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
@@ -388,9 +395,14 @@ fun HomeScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        if (newCollectionName.isNotBlank()) {
-                            onCreateCollection(newCollectionName.trim())
-                            showCreateCollectionDialog = false
+                        val trimmed = newCollectionName.trim()
+                        if (trimmed.isNotBlank()) {
+                            if (uiState.customCollections.any { it.name.equals(trimmed, ignoreCase = true) }) {
+                                nameError = "මෙම නමින් එකතුවක් දැනටමත් පවතී"
+                            } else {
+                                onCreateCollection(trimmed)
+                                showCreateCollectionDialog = false
+                            }
                         }
                     },
                     enabled = newCollectionName.isNotBlank()

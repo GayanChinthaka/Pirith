@@ -108,12 +108,11 @@ class UserPreferencesRepository(private val context: Context) {
             }
         }
 
-    suspend fun createCollection(name: String): SuttaCollection {
-        val newCollection = SuttaCollection(
-            id = java.util.UUID.randomUUID().toString(),
-            name = name.trim(),
-            suttaIds = emptyList()
-        )
+    suspend fun createCollection(name: String): SuttaCollection? {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return null
+        
+        var created: SuttaCollection? = null
         context.dataStore.edit { prefs ->
             val jsonStr = prefs[Keys.CUSTOM_COLLECTIONS]
             val currentList = if (!jsonStr.isNullOrEmpty()) {
@@ -125,11 +124,54 @@ class UserPreferencesRepository(private val context: Context) {
             } else {
                 mutableListOf()
             }
+            
+            // Check if collection with same name already exists (case-insensitive)
+            if (currentList.any { it.name.equals(trimmed, ignoreCase = true) }) {
+                created = null
+                return@edit
+            }
+            
+            val newCollection = SuttaCollection(
+                id = java.util.UUID.randomUUID().toString(),
+                name = trimmed,
+                suttaIds = emptyList()
+            )
             currentList.add(newCollection)
             val listToSave: List<SuttaCollection> = currentList
             prefs[Keys.CUSTOM_COLLECTIONS] = Json.encodeToString(listToSave)
+            created = newCollection
         }
-        return newCollection
+        return created
+    }
+
+    suspend fun renameCollection(collectionId: String, newName: String): Boolean {
+        val trimmed = newName.trim()
+        if (trimmed.isEmpty()) return false
+        
+        var success = false
+        context.dataStore.edit { prefs ->
+            val jsonStr = prefs[Keys.CUSTOM_COLLECTIONS] ?: return@edit
+            try {
+                val currentList = Json.decodeFromString<List<SuttaCollection>>(jsonStr)
+                // Check if another collection already has this name
+                if (currentList.any { it.id != collectionId && it.name.equals(trimmed, ignoreCase = true) }) {
+                    success = false
+                    return@edit
+                }
+                val updated = currentList.map { coll ->
+                    if (coll.id == collectionId) coll.copy(name = trimmed) else coll
+                }
+                prefs[Keys.CUSTOM_COLLECTIONS] = Json.encodeToString(updated)
+                success = true
+            } catch (_: Exception) {}
+        }
+        return success
+    }
+
+    suspend fun updateCollectionsOrder(reorderedList: List<SuttaCollection>) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.CUSTOM_COLLECTIONS] = Json.encodeToString(reorderedList)
+        }
     }
 
     suspend fun deleteCollection(collectionId: String) {

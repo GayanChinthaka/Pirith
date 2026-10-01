@@ -17,7 +17,9 @@ interface PirithRepository {
     fun searchSuttaIdsByVerseContent(query: String): Flow<List<Int>>
 
     fun getCustomCollections(): Flow<List<com.pokerlanka.pirith.domain.model.SuttaCollection>>
-    suspend fun createCustomCollection(name: String): com.pokerlanka.pirith.domain.model.SuttaCollection
+    suspend fun createCustomCollection(name: String): com.pokerlanka.pirith.domain.model.SuttaCollection?
+    suspend fun renameCustomCollection(collectionId: String, newName: String): Boolean
+    suspend fun updateCollectionsOrder(reorderedList: List<com.pokerlanka.pirith.domain.model.SuttaCollection>)
     suspend fun deleteCustomCollection(collectionId: String)
     suspend fun toggleSuttaInCollection(collectionId: String, suttaId: Int)
 }

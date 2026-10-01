@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
@@ -126,6 +127,22 @@ fun SettingsScreen(
                         },
                         onClick = {
                             navController.navigate(Screen.ReaderDefaultsSettings.route)
+                        }
+                    ),
+                    // 3. Manage Collections / Playlists
+                    Material3SettingsItem(
+                        icon = Icons.Default.Bookmarks,
+                        title = { Text("පිරිත් එකතු (Collections / Playlists)") },
+                        description = { Text("එකතු කළමනාකරණය, නම් වෙනස් කිරීම සහ පෙළගැස්ම") },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        onClick = {
+                            navController.navigate(Screen.CollectionsSettings.route)
                         }
                     )
                 )

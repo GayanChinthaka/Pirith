@@ -116,11 +116,32 @@ class HomeViewModel(
         }
     }
 
-    fun createCollection(name: String) {
-        if (name.isBlank()) return
+    fun createCollection(name: String, onResult: ((Boolean) -> Unit)? = null) {
+        val trimmed = name.trim()
+        if (trimmed.isBlank()) {
+            onResult?.invoke(false)
+            return
+        }
         viewModelScope.launch {
-            val created = repository.createCustomCollection(name.trim())
-            _selectedCategory.value = "coll_${created.id}"
+            val created = repository.createCustomCollection(trimmed)
+            if (created != null) {
+                _selectedCategory.value = "coll_${created.id}"
+                onResult?.invoke(true)
+            } else {
+                onResult?.invoke(false)
+            }
+        }
+    }
+
+    fun renameCollection(collectionId: String, newName: String, onResult: ((Boolean) -> Unit)? = null) {
+        val trimmed = newName.trim()
+        if (trimmed.isBlank()) {
+            onResult?.invoke(false)
+            return
+        }
+        viewModelScope.launch {
+            val success = repository.renameCustomCollection(collectionId, trimmed)
+            onResult?.invoke(success)
         }
     }
 

@@ -48,6 +48,9 @@ fun MainNavHost(navController: NavHostController) {
         composable(Screen.ReaderDefaultsSettings.route) {
             com.pokerlanka.pirith.ui.settings.ReaderDefaultsSettingsScreen(navController = navController)
         }
+        composable(Screen.CollectionsSettings.route) {
+            com.pokerlanka.pirith.ui.settings.CollectionsSettingsScreen(navController = navController)
+        }
         composable(Screen.GuideSettings.route) {
             com.pokerlanka.pirith.ui.settings.GuideSettingsScreen(navController = navController)
         }
