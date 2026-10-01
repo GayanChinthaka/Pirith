@@ -39,5 +39,20 @@ fun MainNavHost(navController: NavHostController) {
         composable(Screen.Settings.route) {
             SettingsScreen(navController = navController)
         }
+        composable(Screen.AppearanceSettings.route) {
+            com.pokerlanka.pirith.ui.settings.AppearanceSettingsScreen(navController = navController)
+        }
+        composable(Screen.ReaderDefaultsSettings.route) {
+            com.pokerlanka.pirith.ui.settings.ReaderDefaultsSettingsScreen(navController = navController)
+        }
+        composable(Screen.GuideSettings.route) {
+            com.pokerlanka.pirith.ui.settings.GuideSettingsScreen(navController = navController)
+        }
+        composable(Screen.UpdaterSettings.route) {
+            com.pokerlanka.pirith.ui.settings.UpdaterSettingsScreen(navController = navController)
+        }
+        composable(Screen.AboutSettings.route) {
+            com.pokerlanka.pirith.ui.settings.AboutSettingsScreen(navController = navController)
+        }
     }
 }
