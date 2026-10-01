@@ -352,78 +352,45 @@ def scrape_namo_page(slug: str, session: requests.Session):
 # ==============================================================================
 
 SUTTAS_CONFIG = [
-    # 1. Namaskara & Saranagamanam (pitaka.lk)
+    # --- 1. වන්දනා (Vandana) ---
     {"id": 1, "source": "pitaka", "key": "02-saranagamanam", "titlePali": "Namaskara & Saranagamanam", "titleSinhala": "නමස්කාරය සහ තිසරණය", "category": "වන්දනා", "orderIndex": 1, "isFavorite": 0},
-    # 2. Ratanattaya Vandana (pitaka.lk Dhajagga)
     {"id": 2, "source": "pitaka_theruwan", "key": "theruwan", "titlePali": "Ratanattaya Vandana", "titleSinhala": "තෙරුවන් නැමදීම (රත්නත්‍රය වන්දනා)", "category": "වන්දනා", "orderIndex": 2, "isFavorite": 0},
-    # 3. Dasa Sila (pitaka.lk)
-    {"id": 3, "source": "pitaka", "key": "03-dasasikkhapadani", "titlePali": "Dasa Sila Vandana", "titleSinhala": "දස සිල් සහ පන්සිල් වන්දනාව", "category": "වන්දනා", "orderIndex": 3, "isFavorite": 0},
-    # 4. Maha Mangala Sutta (pitaka.lk)
-    {"id": 4, "source": "pitaka_mahamangala", "key": "08-mahamangala", "titlePali": "Maha Mangala Suttam", "titleSinhala": "මහා මංගල සූත්‍රය", "category": "මහා පිරිත්", "orderIndex": 1, "isFavorite": 0},
-    # 5. Ratana Sutta (pitaka.lk 17 verses)
-    {"id": 5, "source": "pitaka_rathana", "key": "09-rathana", "titlePali": "Ratana Suttam", "titleSinhala": "රතන සූත්‍රය", "category": "මහා පිරිත්", "orderIndex": 2, "isFavorite": 0},
-    # 6. Karaniya Metta Sutta (pitaka.lk 10 verses)
-    {"id": 6, "source": "pitaka_karaniya", "key": "10-karaniya", "titlePali": "Karaniya Metta Suttam", "titleSinhala": "කරණීය මෙත්ත සූත්‍රය", "category": "මහා පිරිත්", "orderIndex": 3, "isFavorite": 0},
-    # 7. Khandha Parittam (pitaka.lk)
-    {"id": 7, "source": "pitaka_std", "key": "11-khandha-parittam", "titlePali": "Khandha Parittam", "titleSinhala": "ඛන්ධ පිරිත (කඳ පිරිත)", "category": "සෙත් පිරිත්", "orderIndex": 4, "isFavorite": 0},
-    # 8. Mora Parittam (pitaka.lk)
-    {"id": 8, "source": "pitaka_std", "key": "14-mora-parittam", "titlePali": "Mora Parittam", "titleSinhala": "මෝර පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 5, "isFavorite": 0},
-    # 9. Dhajagga Suttam (pitaka.lk)
-    {"id": 9, "source": "pitaka_std", "key": "17-dhajagga-parittam", "titlePali": "Dhajagga Suttam", "titleSinhala": "ධජග්ග සූත්‍රය (ධජග්ග පිරිත)", "category": "සෙත් පිරිත්", "orderIndex": 6, "isFavorite": 0},
-    # 10. Angulimala Parittam (pitaka.lk 17 verses)
-    {"id": 10, "source": "pitaka_std", "key": "50-angulimala", "titlePali": "Angulimala Parittam", "titleSinhala": "අංගුලිමාල පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 8, "isFavorite": 0},
-    # 11. Bojjhanga Parittam (pitaka.lk)
-    {"id": 11, "source": "pitaka_std", "key": "61-bojjhanga-parittam", "titlePali": "Bojjhanga Parittam", "titleSinhala": "බොජ්ඣංග පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 9, "isFavorite": 0},
-    # 12. Jaya Parittam (pitaka.lk 15 verses)
-    {"id": 12, "source": "pitaka_std", "key": "56-jaya-parittam", "titlePali": "Jaya Parittam", "titleSinhala": "ජය පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 10, "isFavorite": 0},
-    # 13. Girimananda Suttam (pitaka.lk)
-    {"id": 13, "source": "pitaka_std", "key": "21-girimananda-suttam", "titlePali": "Girimananda Suttam", "titleSinhala": "ගිරිමානන්ද සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 14, "isFavorite": 0},
-    # 14. Isigili Suttam (pitaka.lk)
-    {"id": 14, "source": "pitaka_std", "key": "22-isigili-suttam", "titlePali": "Isigili Suttam", "titleSinhala": "ඉසිගිලි සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 16, "isFavorite": 0},
-    # 15. Dhammacakkappavattana Suttam (pitaka.lk)
-    {"id": 15, "source": "pitaka_std", "key": "23-dhammacakkappavattana", "titlePali": "Dhammacakkappavattana Suttam", "titleSinhala": "ධම්මචක්කප්පවත්තන සූත්‍රය (දම්සක් පැවතුම් සූත්‍රය)", "category": "විශේෂ සූත්‍ර", "orderIndex": 17, "isFavorite": 0},
-    # 16. Suriya Parittam (pitaka.lk)
-    {"id": 16, "source": "pitaka_std", "key": "16-suriya-parittam", "titlePali": "Suriya Parittam", "titleSinhala": "සූරිය පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 11, "isFavorite": 0},
-    # 17. Chanda Parittam (pitaka.lk)
-    {"id": 17, "source": "pitaka_std", "key": "15-canda-parittam", "titlePali": "Chanda Parittam", "titleSinhala": "චන්ද පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 12, "isFavorite": 0},
-    # 18. Rathnamali Gatha (namo.lk)
-    {"id": 18, "source": "namo", "slug": "rathnamali-yantra", "titlePali": "Rathnamali Gatha", "titleSinhala": "රත්නමාලී ගාථා (රත්නමාලී යන්ත්‍රය)", "category": "සෙත් පිරිත්", "orderIndex": 14, "isFavorite": 0},
-    # 19. Dasa Dhamma Suttam (pitaka.lk)
-    {"id": 19, "source": "pitaka_std", "key": "07-dasadhamma", "titlePali": "Dasa Dhamma Suttam", "titleSinhala": "දසධම්ම සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 20, "isFavorite": 0},
-    # 20. Vasala Suttam (namo.lk verified)
-    {"id": 20, "source": "namo", "slug": "vasala-sutta", "titlePali": "Vasala Suttam", "titleSinhala": "වසල සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 21, "isFavorite": 0},
-    # 21. Parabhava Suttam (pitaka.lk)
-    {"id": 21, "source": "pitaka_std", "key": "27-parabhava-suttam", "titlePali": "Parabhava Suttam", "titleSinhala": "පරාභව සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 22, "isFavorite": 0},
-    # 22. Alavaka Suttam (pitaka.lk)
-    {"id": 22, "source": "pitaka_std", "key": "25-alavaka-suttam", "titlePali": "Alavaka Suttam", "titleSinhala": "ආලවක සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 23, "isFavorite": 0},
-    # 23. Buddha Puja Gatha (namo.lk)
-    {"id": 23, "source": "namo", "slug": "buddha-puja", "titlePali": "Buddha Puja Gatha", "titleSinhala": "බුද්ධ පූජා සහ බෝධි පූජා ගාථා", "category": "වන්දනා", "orderIndex": 4, "isFavorite": 0},
-    # 24. Buddha Guna Parittam (namo.lk)
-    {"id": 24, "source": "namo", "slug": "budhu-guna-piritha", "titlePali": "Buddha Guna Parittam", "titleSinhala": "බුදු ගුණ පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 13, "isFavorite": 0},
-    # 25. Dhamma Vandana (namo.lk)
-    {"id": 25, "source": "namo", "slug": "dhamma-guna", "titlePali": "Dhamma Vandana", "titleSinhala": "දහම් ගුණ වන්දනාව (ධර්ම රත්නයේ ගුණ)", "category": "වන්දනා", "orderIndex": 5, "isFavorite": 0},
-    # 26. Sangha Vandana (namo.lk)
-    {"id": 26, "source": "namo", "slug": "sanga-guna", "titlePali": "Sangha Vandana", "titleSinhala": "සඟ ගුණ වන්දනාව (සංඝ රත්නයේ ගුණ)", "category": "වන්දනා", "orderIndex": 6, "isFavorite": 0},
-    # 27. Buddhanussati Bhavana (namo.lk)
-    {"id": 27, "source": "namo", "slug": "buddha-meditation", "titlePali": "Buddhanussati Bhavana", "titleSinhala": "බුද්ධානුස්සති භාවනාව", "category": "වන්දනා", "orderIndex": 7, "isFavorite": 0},
-    # 28. Mettanisansa Suttam (pitaka.lk)
-    {"id": 28, "source": "pitaka_std", "key": "12-mettanisamsa", "titlePali": "Mettanisansa Suttam", "titleSinhala": "මෙත්තානිසංස සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 24, "isFavorite": 0},
-    # 29. Mittanisansa Suttam (pitaka.lk)
-    {"id": 29, "source": "pitaka_std", "key": "13-mittanisamsa", "titlePali": "Mittanisansa Suttam", "titleSinhala": "මිත්තානිසංස සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 25, "isFavorite": 0},
-    # 30. Cakkavatti Sihanada Suttam (namo.lk aligned)
-    {"id": 30, "source": "namo", "slug": "chakkavatti-seehanada-sutra", "titlePali": "Cakkavatti Sihanada Suttam", "titleSinhala": "චක්කවත්ති සීහනාද සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 26, "isFavorite": 0},
-    # 31. Nivapa Suttam (namo.lk)
-    {"id": 31, "source": "namo", "slug": "nivapa-sutta", "titlePali": "Nivapa Suttam", "titleSinhala": "නිවාප සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 27, "isFavorite": 0},
-    # 101. Vattaka Parittam (pitaka.lk 7 verses)
-    {"id": 101, "source": "pitaka_std", "key": "52-wattaka", "titlePali": "Vattaka Parittam", "titleSinhala": "වට්ටක පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 7, "isFavorite": 0},
-    # 102. Atanatiya Suttam (tripitaka.online canonical 53 verses)
-    {"id": 102, "source": "tripitaka_online", "titlePali": "Atanatiya Suttam", "titleSinhala": "ආටානාටිය සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 15, "isFavorite": 0},
-    # 103. Atavisi Parittam (pitaka.lk 10 verses)
-    {"id": 103, "source": "pitaka_std", "key": "51-atavisi", "titlePali": "Atavisi Parittam", "titleSinhala": "අටවිසි පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 13, "isFavorite": 0},
-    # 104. Jinapanjara Parittam (pitaka.lk 20 complete verses)
-    {"id": 104, "source": "pitaka_std", "key": "59-jinapanjara-parittam", "titlePali": "Jinapanjara Parittam", "titleSinhala": "ජිනපඤ්ජර පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 13, "isFavorite": 0},
-    # 105. Anattalakkhana Suttam (canonical)
-    {"id": 105, "source": "static", "titlePali": "Anattalakkhana Suttam", "titleSinhala": "අනත්තලක්ඛණ සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 18, "isFavorite": 0, "verses": [
+    {"id": 32, "source": "namo_puja_slice", "slug": "buddha-puja", "slice_start": 0, "slice_end": 3, "titlePali": "Pancha Sila Samadanaya", "titleSinhala": "පංචශීලය (පන්සිල් සමාදන් වීම)", "category": "වන්දනා", "orderIndex": 3, "isFavorite": 0},
+    {"id": 3, "source": "pitaka", "key": "03-dasasikkhapadani", "titlePali": "Dasa Sila Vandana", "titleSinhala": "දස සිල් වන්දනාව", "category": "වන්දනා", "orderIndex": 4, "isFavorite": 0},
+    {"id": 23, "source": "namo_puja_slice", "slug": "buddha-puja", "slice_start": 10, "slice_end": 21, "titlePali": "Buddha Puja Gatha", "titleSinhala": "බුද්ධ පූජා ගාථා", "category": "වන්දනා", "orderIndex": 5, "isFavorite": 0},
+    {"id": 25, "source": "namo", "slug": "dhamma-guna", "titlePali": "Dhamma Vandana", "titleSinhala": "දහම් ගුණ වන්දනාව (ධර්ම රත්නයේ ගුණ)", "category": "වන්දනා", "orderIndex": 6, "isFavorite": 0},
+    {"id": 26, "source": "namo", "slug": "sanga-guna", "titlePali": "Sangha Vandana", "titleSinhala": "සඟ ගුණ වන්දනාව (සංඝ රත්නයේ ගුණ)", "category": "වන්දනා", "orderIndex": 7, "isFavorite": 0},
+    {"id": 27, "source": "namo", "slug": "buddha-meditation", "titlePali": "Buddhanussati Bhavana", "titleSinhala": "බුද්ධානුස්සති භාවනාව", "category": "වන්දනා", "orderIndex": 8, "isFavorite": 0},
+
+    # --- 2. බෝධි පූජා (Bodhi Puja) ---
+    {"id": 33, "source": "namo_puja_slice", "slug": "buddha-puja", "slice_start": 6, "slice_end": 10, "titlePali": "Bodhi Vandanawa saha Gatha", "titleSinhala": "බෝධි වන්දනාව සහ ගාථා", "category": "බෝධි පූජා", "orderIndex": 9, "isFavorite": 0},
+
+    # --- 3. මහා පිරිත් (Maha Pirith) ---
+    {"id": 4, "source": "pitaka_mahamangala", "key": "08-mahamangala", "titlePali": "Maha Mangala Suttam", "titleSinhala": "මහා මංගල සූත්‍රය", "category": "මහා පිරිත්", "orderIndex": 10, "isFavorite": 0},
+    {"id": 5, "source": "pitaka_rathana", "key": "09-rathana", "titlePali": "Ratana Suttam", "titleSinhala": "රතන සූත්‍රය", "category": "මහා පිරිත්", "orderIndex": 11, "isFavorite": 0},
+    {"id": 6, "source": "pitaka_karaniya", "key": "10-karaniya", "titlePali": "Karaniya Metta Suttam", "titleSinhala": "කරණීය මෙත්ත සූත්‍රය", "category": "මහා පිරිත්", "orderIndex": 12, "isFavorite": 0},
+
+    # --- 4. සෙත් පිරිත් (Seth Pirith) ---
+    {"id": 7, "source": "pitaka_std", "key": "11-khandha-parittam", "titlePali": "Khandha Parittam", "titleSinhala": "ඛන්ධ පිරිත (කඳ පිරිත)", "category": "සෙත් පිරිත්", "orderIndex": 13, "isFavorite": 0},
+    {"id": 8, "source": "pitaka_std", "key": "14-mora-parittam", "titlePali": "Mora Parittam", "titleSinhala": "මෝර පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 14, "isFavorite": 0},
+    {"id": 9, "source": "pitaka_std", "key": "17-dhajagga-parittam", "titlePali": "Dhajagga Suttam", "titleSinhala": "ධජග්ග සූත්‍රය (ධජග්ග පිරිත)", "category": "සෙත් පිරිත්", "orderIndex": 15, "isFavorite": 0},
+    {"id": 101, "source": "pitaka_std", "key": "52-wattaka", "titlePali": "Vattaka Parittam", "titleSinhala": "වට්ටක පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 16, "isFavorite": 0},
+    {"id": 10, "source": "pitaka_std", "key": "50-angulimala", "titlePali": "Angulimala Parittam", "titleSinhala": "අංගුලිමාල පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 17, "isFavorite": 0},
+    {"id": 11, "source": "pitaka_std", "key": "61-bojjhanga-parittam", "titlePali": "Bojjhanga Parittam", "titleSinhala": "බොජ්ඣංග පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 18, "isFavorite": 0},
+    {"id": 12, "source": "pitaka_std", "key": "56-jaya-parittam", "titlePali": "Jaya Parittam", "titleSinhala": "ජය පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 19, "isFavorite": 0},
+    {"id": 16, "source": "pitaka_std", "key": "16-suriya-parittam", "titlePali": "Suriya Parittam", "titleSinhala": "සූරිය පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 20, "isFavorite": 0},
+    {"id": 17, "source": "pitaka_std", "key": "15-canda-parittam", "titlePali": "Chanda Parittam", "titleSinhala": "චන්ද පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 21, "isFavorite": 0},
+    {"id": 24, "source": "namo", "slug": "budhu-guna-piritha", "titlePali": "Buddha Guna Parittam", "titleSinhala": "බුදු ගුණ පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 22, "isFavorite": 0},
+    {"id": 103, "source": "pitaka_std", "key": "51-atavisi", "titlePali": "Atavisi Parittam", "titleSinhala": "අටවිසි පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 23, "isFavorite": 0},
+    {"id": 104, "source": "pitaka_std", "key": "59-jinapanjara-parittam", "titlePali": "Jinapanjara Parittam", "titleSinhala": "ජිනපඤ්ජර පිරිත", "category": "සෙත් පිරිත්", "orderIndex": 24, "isFavorite": 0},
+    {"id": 18, "source": "namo", "slug": "rathnamali-yantra", "titlePali": "Rathnamali Gatha", "titleSinhala": "රත්නමාලී ගාථා (රත්නමාලී යන්ත්‍රය)", "category": "සෙත් පිරිත්", "orderIndex": 25, "isFavorite": 0},
+
+    # --- 5. විශේෂ සූත්‍ර (Vishesha Sutta) ---
+    {"id": 13, "source": "pitaka_std", "key": "21-girimananda-suttam", "titlePali": "Girimananda Suttam", "titleSinhala": "ගිරිමානන්ද සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 26, "isFavorite": 0},
+    {"id": 102, "source": "tripitaka_online", "titlePali": "Atanatiya Suttam", "titleSinhala": "ආටානාටිය සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 27, "isFavorite": 0},
+    {"id": 14, "source": "pitaka_std", "key": "22-isigili-suttam", "titlePali": "Isigili Suttam", "titleSinhala": "ඉසිගිලි සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 28, "isFavorite": 0},
+    {"id": 15, "source": "pitaka_std", "key": "23-dhammacakkappavattana", "titlePali": "Dhammacakkappavattana Suttam", "titleSinhala": "ධම්මචක්කප්පවත්තන සූත්‍රය (දම්සක් පැවතුම් සූත්‍රය)", "category": "විශේෂ සූත්‍ර", "orderIndex": 29, "isFavorite": 0},
+    {"id": 105, "source": "static", "titlePali": "Anattalakkhana Suttam", "titleSinhala": "අනත්තලක්ඛණ සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 30, "isFavorite": 0, "verses": [
         ("ඒවං මේ සුතං. ඒකං සමයං භගවා බාරාණසියං විහරති ඉසිපතනේ මිගදායේ.\nතත්‍ර ඛෝ භගවා පඤ්චවග්ගියේ භික්ඛූ ආමන්තේසි භික්ඛවෝති.", "මා විසින් මෙසේ අසන ලදී. එක් සමයෙක භාග්‍යවතුන් වහන්සේ බරණැස ඉසිපතන මිගදායෙහි වැඩවසන සේක. එහි දී භාග්‍යවතුන් වහන්සේ පස්වග මහණුන් අමතා 'මහණෙනි' යි වදාළ සේක."),
         ("රූපං භික්ඛවේ අනත්තා. රූපඤ්ච හිදං භික්ඛවේ අත්තා අභවිස්ස, නයිදං රූපං ආබාධාය සංවත්තේථ, ලබ්භේථ ච රූපේ: ඒවං මේ රූපං හෝතු, ඒවං මේ රූපං මා අහෝසීති.", "මහණෙනි, රූපය අනාත්ම ය. මහණෙනි, ඉදින් මේ රූපය ආත්මය වී නම්, මේ රූපය පෙළීමට හේතු නොවන්නේ ය. තවද 'මාගේ රූපය මෙසේ වේවා, මාගේ රූපය මෙසේ නොවේවා' යි රූපය කෙරෙහි කැමැත්ත පරිදි පැවැත්විය හැකි වන්නේ ය."),
         ("යස්මා ච ඛෝ භික්ඛවේ රූපං අනත්තා, තස්මා රූපං ආබාධාය සංවත්තති, න ච ලබ්භති රූපේ: ඒවං මේ රූපං හෝතු, ඒවං මේ රූපං මා අහෝසීති.", "මහණෙනි, යම් හෙයකින් රූපය අනාත්ම වේ ද, එහෙයින් රූපය පෙළීමට හේතු වෙයි. 'මාගේ රූපය මෙසේ වේවා, මෙසේ නොවේවා' යි කැමැත්ත පරිදි ද නොලැබෙයි."),
@@ -434,8 +401,7 @@ SUTTAS_CONFIG = [
         ("නිබ්බින්දං විරජ්ජති, විරාගා විමුච්චති, විමුත්තස්මිං විමුත්තමිති ඤාණං හෝති: ඛීණා ජාති, වුසිතං බ්‍රහ්මචරියං, කතං කරණීයං, නාපරං ඉත්ථත්තායාති පජානාතීති.", "කලකිරෙන්නේ නොඇලෙයි. නොඇල්මෙන් මිදෙයි. මිදුණු කල්හි 'මිදුණේ ය' යන ඥානය වෙයි. 'ජාතිය ක්ෂය විය. බඹසර වැස නිමවන ලදී. කළ යුතු දේ කරන ලදී. මෙයින් මතු කළ යුතු අන් කිසිවක් නැතැ'යි දැනගනියි."),
         ("ඉදමවෝච භගවා. අත්තමනා පඤ්චවග්ගියා භික්ඛූ භගවතෝ භාසිතං අභිනන්දුන්ති. ඉමස්මිඤ්ච පන වෙය්‍යාකරණස්මිං භඤ්ඤමානේ පඤ්චවග්ගියානං භික්ඛූනං අනුපාදාය ආසවේහි චිත්තානි විමුච්චිංසූති.", "භාග්‍යවතුන් වහන්සේ මෙය වදාළ සේක. සතුටු සිත් ඇති පස්වග මහණහු භාග්‍යවතුන් වහන්සේගේ වචනය සාදරයෙන් පිළිගත්හ. මේ ධර්ම දේශනාව පවත්වන කල්හි පස්වග තෙරවරුන්ගේ සිත් දැඩිව නොගෙන ආශ්‍රවයන්ගෙන් සපුරා මිදුණාහු ය.")
     ]},
-    # 106. Adittapariyaya Suttam (canonical)
-    {"id": 106, "source": "static", "titlePali": "Adittapariyaya Suttam", "titleSinhala": "ආදිත්තපරියාය සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 19, "isFavorite": 0, "verses": [
+    {"id": 106, "source": "static", "titlePali": "Adittapariyaya Suttam", "titleSinhala": "ආදිත්තපරියාය සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 31, "isFavorite": 0, "verses": [
         ("ඒවං මේ සුතං. ඒකං සමයං භගවා ගයායං විහරති ගයාසීසේ සද්ධිං භික්ඛුසහස්සේන. තත්‍ර ඛෝ භගවා භික්ඛූ ආමන්තේසි:", "මා විසින් මෙසේ අසන ලදී. එක් කලෙක භාග්‍යවතුන් වහන්සේ දහසක් භික්ෂූන් සමඟ ගයාවෙහි ගයාසීස නම් පර්වතයෙහි වැඩවසන සේක. එහි දී භාග්‍යවතුන් වහන්සේ භික්ෂූන් අමතා මෙසේ වදාළ සේක:"),
         ("සබ්බං භික්ඛවේ ආදිත්තං. කිඤ්ච භික්ඛවේ සබ්බං ආදිත්තං? චක්ඛුං භික්ඛවේ ආදිත්තං, රූපා ආදිත්තා, චක්ඛුවිඤ්ඤාණං ආදිත්තං, චක්ඛුසම්ඵස්සෝ ආදිත්තෝ.", "මහණෙනි, සියල්ල ගිනි ගෙන ඇවිළෙන්නේ ය. මහණෙනි, ගිනි ගෙන ඇවිළෙන සියල්ල කුමක් ද? මහණෙනි, ඇස ගිනි ගෙන ඇත, රූප ගිනි ගෙන ඇත, ඇසේ විඤ්ඤාණය ගිනි ගෙන ඇත, ඇසේ ස්පර්ශය ගිනි ගෙන ඇත."),
         ("කේන ආදිත්තං? රාගග්ගිනා, දෝසග්ගිනා, මෝහග්ගිනා ආදිත්තං, ජාතියා ජරාමරණේන සෝකේහි පරිදේවේහි දුක්ඛේහි දෝමනස්සේහි උපායාසේහි ආදිත්තන්ති වදාමි.", "කුමකින් ඇවිළී තිබේ ද? රාග ගින්නෙන්, ද්වේෂ ගින්නෙන්, මෝහ ගින්නෙන් ඇවිළී තිබේ. ජාතියෙන්, ජරාවෙන්, මරණයෙන්, ශෝකයෙන්, වැළපීමෙන්, දුකෙන්, දොම්නසින් සහ සුසුම්ලෑමෙන් ඇවිළී ඇතැයි මම කියමි."),
@@ -443,7 +409,15 @@ SUTTAS_CONFIG = [
         ("ඒවං පස්සං භික්ඛවේ සුතවා අරියසාවකෝ චක්ඛුස්මිම්පි නිබ්බින්දති, රූපේසුපි නිබ්බින්දති, සෝතස්මිම්පි නිබ්බින්දති... මනස්මිම්පි නිබ්බින්දති.", "මහණෙනි, මෙසේ දක්නා ශ්‍රැතවත් ආර්ය ශ්‍රාවක තෙමේ ඇසෙහි ද කලකිරෙයි, රූපයන්හි ද කලකිරෙයි, කනෙහි ද කලකිරෙයි... මනසෙහි ද කලකිරෙයි."),
         ("නිබ්බින්දං විරජ්ජති, විරාගා විමුච්චති. විමුත්තස්මිං විමුත්තමිති ඤාණං හෝති. ඛීණා ජාති, වුසිතං බ්‍රහ්මචරියං, කතං කරණීයං, නාපරං ඉත්ථත්තායාති පජානාතීති.", "කලකිරුණේ නොඇලෙයි, නොඇල්මෙන් කෙලෙසුන්ගෙන් මිදෙයි. මිදුණු කල්හි මිදුණේ යයි නුවණ පහළ වෙයි. ජාතිය ක්ෂය විය, බඹසර වැස නිමවන ලදී, කළ යුත්ත කරන ලදී, නිවන පිණිස මින් මතු කළ යුතු කිසිවක් නැතැයි ප්‍රත්‍යක්ෂයෙන් ම දැනගනියි."),
         ("ඉදමවෝච භගවා. අත්තමනා තේ භික්ඛූ භගවතෝ භාසිතං අභිනන්දුන්ති. ඉමස්මිඤ්ච පන වෙය්‍යාකරණස්මිං භඤ්ඤමානේ තස්ස භික්ඛුසහස්සස්ස අනුපාදාය ආසවේහි චිත්තානි විමුච්චිංසූති.", "භාග්‍යවතුන් වහන්සේ මේ උතුම් දේශනාව වදාළ සේක. සතුටු සිත් ඇති ඒ දහසක් භික්ෂූහු භාග්‍යවතුන් වහන්සේගේ වචනය සාදරයෙන් පිළිගත්හ. මේ ධර්ම දේශනාව පවත්වන කල්හි ඒ දහසක් භික්ෂූන්ගේ සිත් සියලු ආශ්‍රවයන්ගෙන් සහමුලින් ම මිදී අරහත්වයට පත් වූහ.")
-    ]}
+    ]},
+    {"id": 19, "source": "pitaka_std", "key": "07-dasadhamma", "titlePali": "Dasa Dhamma Suttam", "titleSinhala": "දසධම්ම සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 32, "isFavorite": 0},
+    {"id": 20, "source": "namo", "slug": "vasala-sutta", "titlePali": "Vasala Suttam", "titleSinhala": "වසල සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 33, "isFavorite": 0},
+    {"id": 21, "source": "pitaka_std", "key": "27-parabhava-suttam", "titlePali": "Parabhava Suttam", "titleSinhala": "පරාභව සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 34, "isFavorite": 0},
+    {"id": 22, "source": "pitaka_std", "key": "25-alavaka-suttam", "titlePali": "Alavaka Suttam", "titleSinhala": "ආලවක සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 35, "isFavorite": 0},
+    {"id": 28, "source": "pitaka_std", "key": "12-mettanisamsa", "titlePali": "Mettanisansa Suttam", "titleSinhala": "මෙත්තානිසංස සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 36, "isFavorite": 0},
+    {"id": 29, "source": "pitaka_std", "key": "13-mittanisamsa", "titlePali": "Mittanisansa Suttam", "titleSinhala": "මිත්තානිසංස සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 37, "isFavorite": 0},
+    {"id": 30, "source": "namo", "slug": "chakkavatti-seehanada-sutra", "titlePali": "Cakkavatti Sihanada Suttam", "titleSinhala": "චක්කවත්ති සීහනාද සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 38, "isFavorite": 0},
+    {"id": 31, "source": "namo", "slug": "nivapa-sutta", "titlePali": "Nivapa Suttam", "titleSinhala": "නිවාප සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 39, "isFavorite": 0},
 ]
 
 
@@ -535,6 +509,12 @@ def main():
         elif source == "namo":
             slug = s_info["slug"]
             extracted_verses = scrape_namo_page(slug, session)
+        elif source == "namo_puja_slice":
+            slug = s_info["slug"]
+            all_puja = scrape_namo_page(slug, session)
+            s_start = s_info["slice_start"]
+            s_end = s_info["slice_end"]
+            extracted_verses = all_puja[s_start:s_end]
         elif source == "static":
             extracted_verses = s_info.get("verses", [])
             

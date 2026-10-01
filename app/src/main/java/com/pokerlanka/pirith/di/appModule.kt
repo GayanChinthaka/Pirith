@@ -30,8 +30,8 @@ val appModule = module {
     single { get<PirithDatabase>().verseDao() }
 
     // Repositories
-    single<PirithRepository> { PirithRepositoryImpl(get(), get()) }
     single { UserPreferencesRepository(androidContext()) }
+    single<PirithRepository> { PirithRepositoryImpl(get(), get(), get()) }
 
     // ViewModels
     viewModel { HomeViewModel(get()) }

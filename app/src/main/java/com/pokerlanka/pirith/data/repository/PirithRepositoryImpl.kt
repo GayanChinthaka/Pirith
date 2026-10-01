@@ -2,14 +2,17 @@ package com.pokerlanka.pirith.data.repository
 
 import com.pokerlanka.pirith.data.local.dao.SuttaDao
 import com.pokerlanka.pirith.data.local.dao.VerseDao
+import com.pokerlanka.pirith.data.preferences.UserPreferencesRepository
 import com.pokerlanka.pirith.domain.model.Sutta
+import com.pokerlanka.pirith.domain.model.SuttaCollection
 import com.pokerlanka.pirith.domain.model.Verse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class PirithRepositoryImpl(
     private val suttaDao: SuttaDao,
-    private val verseDao: VerseDao
+    private val verseDao: VerseDao,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : PirithRepository {
 
     override fun getAllSuttas(): Flow<List<Sutta>> =
@@ -43,4 +46,17 @@ class PirithRepositoryImpl(
 
     override fun searchSuttaIdsByVerseContent(query: String): Flow<List<Int>> =
         verseDao.searchSuttaIdsByVerseContent(query)
+
+    override fun getCustomCollections(): Flow<List<SuttaCollection>> =
+        userPreferencesRepository.customCollectionsFlow
+
+    override suspend fun createCustomCollection(name: String): SuttaCollection =
+        userPreferencesRepository.createCollection(name)
+
+    override suspend fun deleteCustomCollection(collectionId: String) =
+        userPreferencesRepository.deleteCollection(collectionId)
+
+    override suspend fun toggleSuttaInCollection(collectionId: String, suttaId: Int) =
+        userPreferencesRepository.toggleSuttaInCollection(collectionId, suttaId)
 }
+

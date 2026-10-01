@@ -15,4 +15,10 @@ interface PirithRepository {
     fun getVersesForSutta(suttaId: Int): Flow<List<Verse>>
     fun searchVerses(query: String): Flow<List<Verse>>
     fun searchSuttaIdsByVerseContent(query: String): Flow<List<Int>>
+
+    fun getCustomCollections(): Flow<List<com.pokerlanka.pirith.domain.model.SuttaCollection>>
+    suspend fun createCustomCollection(name: String): com.pokerlanka.pirith.domain.model.SuttaCollection
+    suspend fun deleteCustomCollection(collectionId: String)
+    suspend fun toggleSuttaInCollection(collectionId: String, suttaId: Int)
 }
+

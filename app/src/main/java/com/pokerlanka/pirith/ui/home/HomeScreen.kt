@@ -1,8 +1,6 @@
 package com.pokerlanka.pirith.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,16 +21,25 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -40,14 +47,17 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,12 +67,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pokerlanka.pirith.domain.model.Sutta
+import com.pokerlanka.pirith.domain.model.SuttaCollection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,9 +83,19 @@ fun HomeScreen(
     onToggleFavoritesOnly: () -> Unit,
     onToggleFavorite: (Sutta) -> Unit,
     onSuttaClick: (Int) -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onCreateCollection: (String) -> Unit = {},
+    onDeleteCollection: (SuttaCollection) -> Unit = {},
+    onToggleSuttaInCollection: (String, Int) -> Unit = { _, _ -> }
 ) {
     var isSearchExpanded by remember { mutableStateOf(false) }
+    var showCreateCollectionDialog by remember { mutableStateOf(false) }
+    var newCollectionName by remember { mutableStateOf("") }
+    var collectionToDelete by remember { mutableStateOf<SuttaCollection?>(null) }
+
+    // State for Sutta Collection management bottom sheet
+    var managingSuttaForCollections by remember { mutableStateOf<Sutta?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         topBar = {
@@ -154,14 +174,16 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Category Chips Row
+            // Category & Custom Collection Chips Row
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // 1. Standard categories
                 items(uiState.categories) { category ->
                     val isSelected = category == uiState.selectedCategory
                     FilterChip(
@@ -178,6 +200,78 @@ fun HomeScreen(
                             selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                             labelColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                }
+
+                // 2. Custom User Collections
+                items(
+                    items = uiState.customCollections,
+                    key = { it.id }
+                ) { collection ->
+                    val collKey = "coll_${collection.id}"
+                    val isSelected = uiState.selectedCategory == collKey || uiState.selectedCategory == collection.name
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onCategorySelected(collKey) },
+                        label = {
+                            Text(
+                                text = collection.name,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = { collectionToDelete = collection },
+                                modifier = Modifier.size(20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.DeleteOutline,
+                                    contentDescription = "Delete ${collection.name}",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                            labelColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                }
+
+                // 3. New Collection Action Chip (+)
+                item {
+                    FilterChip(
+                        selected = false,
+                        onClick = {
+                            newCollectionName = ""
+                            showCreateCollectionDialog = true
+                        },
+                        label = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "නව එකතුවක්",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
                         ),
                         shape = RoundedCornerShape(20.dp)
                     )
@@ -233,7 +327,7 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "වෙනත් සෙවුම් පදයක් හෝ ප්‍රවර්ගයක් තෝරන්න",
+                            text = "මෙම එකතුවට හෝ ප්‍රවර්ගයට සූත්‍ර එක් කරන්න",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -252,10 +346,204 @@ fun HomeScreen(
                         SuttaCard(
                             sutta = sutta,
                             onClick = { onSuttaClick(sutta.id) },
-                            onToggleFavorite = { onToggleFavorite(sutta) }
+                            onToggleFavorite = { onToggleFavorite(sutta) },
+                            onAddToCollection = {
+                                managingSuttaForCollections = sutta
+                            }
                         )
                     }
                 }
+            }
+        }
+    }
+
+    // Create Collection Dialog
+    if (showCreateCollectionDialog) {
+        AlertDialog(
+            onDismissRequest = { showCreateCollectionDialog = false },
+            title = {
+                Text(
+                    text = "නව එකතුවක් සාදන්න",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "ඔබට අවශ්‍ය පිරිත් එකතුව සඳහා නමක් ලබා දෙන්න (උදා: දිනපතා වන්දනාව, සවස පිරිත)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = newCollectionName,
+                        onValueChange = { newCollectionName = it },
+                        label = { Text("එකතුවේ නම") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (newCollectionName.isNotBlank()) {
+                            onCreateCollection(newCollectionName.trim())
+                            showCreateCollectionDialog = false
+                        }
+                    },
+                    enabled = newCollectionName.isNotBlank()
+                ) {
+                    Text("සාදන්න")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCreateCollectionDialog = false }) {
+                    Text("අවලංගු කරන්න")
+                }
+            }
+        )
+    }
+
+    // Delete Collection Confirmation Dialog
+    collectionToDelete?.let { coll ->
+        AlertDialog(
+            onDismissRequest = { collectionToDelete = null },
+            title = {
+                Text(
+                    text = "එකතුව මකන්න ද?",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text("ඔබට '${coll.name}' එකතුව ඉවත් කිරීමට අවශ්‍ය ද? එහි ඇති සූත්‍ර ආරක්ෂිතව පවතිනු ඇත.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteCollection(coll)
+                        collectionToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("මකන්න")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { collectionToDelete = null }) {
+                    Text("අවලංගු කරන්න")
+                }
+            }
+        )
+    }
+
+    // Manage Sutta in Collections Bottom Sheet
+    managingSuttaForCollections?.let { sutta ->
+        ModalBottomSheet(
+            onDismissRequest = { managingSuttaForCollections = null },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = "එකතු වලට එක් කරන්න",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${sutta.id}. ${sutta.titleSinhala}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (uiState.customCollections.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 20.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "තවම ඔබ එකතුවක් සාදා නැත",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(onClick = {
+                                managingSuttaForCollections = null
+                                newCollectionName = ""
+                                showCreateCollectionDialog = true
+                            }) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("නව එකතුවක් සාදන්න")
+                            }
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(uiState.customCollections) { coll ->
+                            val isIncluded = coll.suttaIds.contains(sutta.id)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        onToggleSuttaInCollection(coll.id, sutta.id)
+                                    }
+                                    .padding(vertical = 10.dp, horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = isIncluded,
+                                    onCheckedChange = {
+                                        onToggleSuttaInCollection(coll.id, sutta.id)
+                                    },
+                                    colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = coll.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = "සූත්‍ර ${coll.suttaIds.size} ක් අඩංගුයි",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedButton(
+                        onClick = {
+                            managingSuttaForCollections = null
+                            newCollectionName = ""
+                            showCreateCollectionDialog = true
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("නව එකතුවක් සාදන්න")
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -265,7 +553,8 @@ fun HomeScreen(
 fun SuttaCard(
     sutta: Sutta,
     onClick: () -> Unit,
-    onToggleFavorite: () -> Unit
+    onToggleFavorite: () -> Unit,
+    onAddToCollection: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -335,7 +624,16 @@ fun SuttaCard(
                 }
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+
+            // Add to Custom Collection Button
+            IconButton(onClick = onAddToCollection) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.PlaylistAdd,
+                    contentDescription = "Add to collection",
+                    tint = MaterialTheme.colorScheme.outline
+                )
+            }
 
             // Favorite Toggle Button
             IconButton(onClick = onToggleFavorite) {

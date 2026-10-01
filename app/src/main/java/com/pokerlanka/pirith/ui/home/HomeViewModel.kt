@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pokerlanka.pirith.data.repository.PirithRepository
 import com.pokerlanka.pirith.domain.model.Sutta
+import com.pokerlanka.pirith.domain.model.SuttaCollection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,12 +27,22 @@ class HomeViewModel(
     private val repository: PirithRepository
 ) : ViewModel() {
 
+    private val standardCategories = listOf(
+        "සියල්ල",
+        "වන්දනා",
+        "බෝධි පූජා",
+        "මහා පිරිත්",
+        "සෙත් පිරිත්",
+        "විශේෂ සූත්‍ර"
+    )
+
     private val _selectedCategory = MutableStateFlow("සියල්ල")
     private val _searchQuery = MutableStateFlow("")
     private val _onlyFavorites = MutableStateFlow(false)
 
     private val _allSuttas = repository.getAllSuttas()
-    private val _categories = repository.getCategories()
+    private val _customCollections = repository.getCustomCollections()
+
     private val _matchingVerseSuttaIds = _searchQuery.flatMapLatest { query ->
         if (query.isBlank()) flowOf(emptyList()) else repository.searchSuttaIdsByVerseContent(query.trim())
     }
@@ -47,12 +58,20 @@ class HomeViewModel(
 
     val uiState: StateFlow<HomeUiState> = combine(
         _allSuttas,
-        _categories,
+        _customCollections,
         _filterFlow
-    ) { suttas, categories, filter ->
+    ) { suttas, customCollections, filter ->
         val trimmedQuery = filter.query.trim()
+        val customCollection = customCollections.find { "coll_${it.id}" == filter.category || it.name == filter.category }
+
         val filtered = suttas.filter { sutta ->
-            val matchesCategory = (filter.category == "සියල්ල" || sutta.category == filter.category)
+            val matchesCategory = when {
+                filter.category == "සියල්ල" -> true
+                filter.category.startsWith("coll_") -> customCollection?.suttaIds?.contains(sutta.id) == true
+                customCollections.any { it.name == filter.category } && !standardCategories.contains(filter.category) ->
+                    customCollection?.suttaIds?.contains(sutta.id) == true
+                else -> sutta.category == filter.category
+            }
             val matchesFavorite = (!filter.onlyFavorites || sutta.isFavorite)
             val matchesSearch = if (trimmedQuery.isBlank()) {
                 true
@@ -66,7 +85,8 @@ class HomeViewModel(
 
         HomeUiState(
             suttas = filtered,
-            categories = listOf("සියල්ල") + categories,
+            categories = standardCategories,
+            customCollections = customCollections,
             selectedCategory = filter.category,
             searchQuery = filter.query,
             onlyFavorites = filter.onlyFavorites,
@@ -93,6 +113,29 @@ class HomeViewModel(
     fun onToggleSuttaFavorite(sutta: Sutta) {
         viewModelScope.launch {
             repository.toggleFavorite(sutta.id, sutta.isFavorite)
+        }
+    }
+
+    fun createCollection(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            val created = repository.createCustomCollection(name.trim())
+            _selectedCategory.value = "coll_${created.id}"
+        }
+    }
+
+    fun deleteCollection(collection: SuttaCollection) {
+        viewModelScope.launch {
+            repository.deleteCustomCollection(collection.id)
+            if (_selectedCategory.value == "coll_${collection.id}" || _selectedCategory.value == collection.name) {
+                _selectedCategory.value = "සියල්ල"
+            }
+        }
+    }
+
+    fun toggleSuttaInCollection(collectionId: String, suttaId: Int) {
+        viewModelScope.launch {
+            repository.toggleSuttaInCollection(collectionId, suttaId)
         }
     }
 }

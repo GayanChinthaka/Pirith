@@ -29,7 +29,10 @@ fun MainNavHost(navController: NavHostController) {
                 onToggleFavoritesOnly = { homeViewModel.onToggleFavoritesOnly() },
                 onToggleFavorite = { sutta -> homeViewModel.onToggleSuttaFavorite(sutta) },
                 onSuttaClick = { suttaId -> navController.navigate(Screen.Reader.createRoute(suttaId)) },
-                onSettingsClick = { navController.navigate(Screen.Settings.route) }
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                onCreateCollection = { name -> homeViewModel.createCollection(name) },
+                onDeleteCollection = { coll -> homeViewModel.deleteCollection(coll) },
+                onToggleSuttaInCollection = { collId, suttaId -> homeViewModel.toggleSuttaInCollection(collId, suttaId) }
             )
         }
         composable(Screen.Reader.route) { backStackEntry ->

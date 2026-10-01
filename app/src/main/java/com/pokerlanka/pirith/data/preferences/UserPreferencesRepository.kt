@@ -11,9 +11,12 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.pokerlanka.pirith.domain.model.AppTheme
 import com.pokerlanka.pirith.domain.model.ReaderMode
+import com.pokerlanka.pirith.domain.model.SuttaCollection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.IOException
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
@@ -36,6 +39,7 @@ class UserPreferencesRepository(private val context: Context) {
         val AUTO_SCROLL_SPEED = floatPreferencesKey("auto_scroll_speed")
         val APP_THEME = stringPreferencesKey("app_theme")
         val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
+        val CUSTOM_COLLECTIONS = stringPreferencesKey("custom_collections_json")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -90,4 +94,75 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun setKeepScreenOn(enabled: Boolean) {
         context.dataStore.edit { it[Keys.KEEP_SCREEN_ON] = enabled }
     }
+
+    val customCollectionsFlow: Flow<List<SuttaCollection>> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { prefs ->
+            val jsonStr = prefs[Keys.CUSTOM_COLLECTIONS] ?: return@map emptyList()
+            try {
+                Json.decodeFromString<List<SuttaCollection>>(jsonStr)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+
+    suspend fun createCollection(name: String): SuttaCollection {
+        val newCollection = SuttaCollection(
+            id = java.util.UUID.randomUUID().toString(),
+            name = name.trim(),
+            suttaIds = emptyList()
+        )
+        context.dataStore.edit { prefs ->
+            val jsonStr = prefs[Keys.CUSTOM_COLLECTIONS]
+            val currentList = if (!jsonStr.isNullOrEmpty()) {
+                try {
+                    Json.decodeFromString<List<SuttaCollection>>(jsonStr).toMutableList()
+                } catch (e: Exception) {
+                    mutableListOf()
+                }
+            } else {
+                mutableListOf()
+            }
+            currentList.add(newCollection)
+            val listToSave: List<SuttaCollection> = currentList
+            prefs[Keys.CUSTOM_COLLECTIONS] = Json.encodeToString(listToSave)
+        }
+        return newCollection
+    }
+
+    suspend fun deleteCollection(collectionId: String) {
+        context.dataStore.edit { prefs ->
+            val jsonStr = prefs[Keys.CUSTOM_COLLECTIONS] ?: return@edit
+            try {
+                val currentList = Json.decodeFromString<List<SuttaCollection>>(jsonStr)
+                val updated: List<SuttaCollection> = currentList.filter { it.id != collectionId }
+                prefs[Keys.CUSTOM_COLLECTIONS] = Json.encodeToString(updated)
+            } catch (_: Exception) {}
+        }
+    }
+
+    suspend fun toggleSuttaInCollection(collectionId: String, suttaId: Int) {
+        context.dataStore.edit { prefs ->
+            val jsonStr = prefs[Keys.CUSTOM_COLLECTIONS] ?: return@edit
+            try {
+                val currentList = Json.decodeFromString<List<SuttaCollection>>(jsonStr)
+                val updated: List<SuttaCollection> = currentList.map { coll ->
+                    if (coll.id == collectionId) {
+                        val ids = if (coll.suttaIds.contains(suttaId)) {
+                            coll.suttaIds - suttaId
+                        } else {
+                            coll.suttaIds + suttaId
+                        }
+                        coll.copy(suttaIds = ids)
+                    } else {
+                        coll
+                    }
+                }
+                prefs[Keys.CUSTOM_COLLECTIONS] = Json.encodeToString(updated)
+            } catch (_: Exception) {}
+        }
+    }
 }
+
