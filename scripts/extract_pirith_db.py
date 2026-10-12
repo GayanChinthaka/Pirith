@@ -17,9 +17,9 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 try:
-    from insert_patthana import PATTHANA_ARAMBHAKA_VERSES, PATTHANA_UDDESA_VERSES, PATTHANA_NIDDESA_VERSES
+    from insert_patthana import ALL_PATTHANA_VERSES
 except ImportError:
-    from scripts.insert_patthana import PATTHANA_ARAMBHAKA_VERSES, PATTHANA_UDDESA_VERSES, PATTHANA_NIDDESA_VERSES
+    from scripts.insert_patthana import ALL_PATTHANA_VERSES
 
 DB_DIR = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main", "assets", "databases")
 DB_PATH = os.path.join(DB_DIR, "pirith.db")
@@ -459,9 +459,7 @@ SUTTAS_CONFIG = [
     {"id": 31, "source": "namo", "slug": "nivapa-sutta", "titlePali": "Nivapa Suttam", "titleSinhala": "නිවාප සූත්‍රය", "category": "විශේෂ සූත්‍ර", "orderIndex": 41, "isFavorite": 0},
 
     # --- 6. පට්ඨාන (Patthana) ---
-    {"id": 201, "source": "static", "titlePali": "Patthana Arambhaka Vandana Gatha", "titleSinhala": "පට්ඨාන ආරම්භක හා වන්දනා ගාථා", "category": "පට්ඨාන", "orderIndex": 42, "isFavorite": 0, "verses": PATTHANA_ARAMBHAKA_VERSES},
-    {"id": 202, "source": "static", "titlePali": "Patthana Paccaya Uddesa", "titleSinhala": "පට්ඨාන පච්චය උද්දේසය (සූවිසි ප්‍රත්‍යය)", "category": "පට්ඨාන", "orderIndex": 43, "isFavorite": 0, "verses": PATTHANA_UDDESA_VERSES},
-    {"id": 203, "source": "static", "titlePali": "Patthana Paccaya Niddesa", "titleSinhala": "පට්ඨාන පච්චය නිද්දේසය (ප්‍රත්‍ය විභාගය)", "category": "පට්ඨාන", "orderIndex": 44, "isFavorite": 0, "verses": PATTHANA_NIDDESA_VERSES},
+    {"id": 201, "source": "static", "titlePali": "Mahā Paṭṭhāna Paccaya Sajjhāyanā", "titleSinhala": "මහා පට්ඨාන ප්‍රකරණය", "category": "පට්ඨාන", "orderIndex": 42, "isFavorite": 0, "verses": ALL_PATTHANA_VERSES},
 ]
 
 

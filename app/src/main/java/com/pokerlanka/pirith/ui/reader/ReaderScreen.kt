@@ -1,6 +1,7 @@
 package com.pokerlanka.pirith.ui.reader
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,24 +24,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -95,7 +98,6 @@ fun ReaderScreen(
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
     var showSettingsSheet by remember { mutableStateOf(false) }
-    var showModeDropdown by remember { mutableStateOf(false) }
 
     // Auto-scroll loop
     LaunchedEffect(uiState.isAutoScrolling, uiState.autoScrollSpeed) {
@@ -138,48 +140,6 @@ fun ReaderScreen(
                         }
                     },
                     actions = {
-                        // Display Mode Trigger
-                        Box {
-                            IconButton(onClick = { showModeDropdown = true }) {
-                                Icon(Icons.Default.FormatSize, contentDescription = "Change Display Mode")
-                            }
-                            DropdownMenu(
-                                expanded = showModeDropdown,
-                                onDismissRequest = { showModeDropdown = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("සමාන්තර (පාලි + සිංහල)") },
-                                    onClick = {
-                                        viewModel.setReaderMode(ReaderMode.PARALLEL)
-                                        showModeDropdown = false
-                                    },
-                                    leadingIcon = if (uiState.preferences.readerMode == ReaderMode.PARALLEL) {
-                                        { Icon(Icons.Outlined.Check, contentDescription = null) }
-                                    } else null
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("පාලි ගාථා පමණි") },
-                                    onClick = {
-                                        viewModel.setReaderMode(ReaderMode.PALI_ONLY)
-                                        showModeDropdown = false
-                                    },
-                                    leadingIcon = if (uiState.preferences.readerMode == ReaderMode.PALI_ONLY) {
-                                        { Icon(Icons.Outlined.Check, contentDescription = null) }
-                                    } else null
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("සිංහල තේරුම පමණි") },
-                                    onClick = {
-                                        viewModel.setReaderMode(ReaderMode.SINHALA_ONLY)
-                                        showModeDropdown = false
-                                    },
-                                    leadingIcon = if (uiState.preferences.readerMode == ReaderMode.SINHALA_ONLY) {
-                                        { Icon(Icons.Outlined.Check, contentDescription = null) }
-                                    } else null
-                                )
-                            }
-                        }
-
                         // Auto Scroll Toggle
                         IconButton(onClick = { viewModel.toggleAutoScroll() }) {
                             Icon(
@@ -229,26 +189,41 @@ fun ReaderScreen(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    Column(
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        itemsIndexed(
-                            items = uiState.verses,
-                            key = { _, item -> item.id }
-                        ) { index, verse ->
-                            VerseCard(
-                                index = index + 1,
-                                verse = verse,
-                                readerMode = uiState.preferences.readerMode,
-                                fontScale = uiState.preferences.fontSizeScale,
-                                lineHeightMultiplier = uiState.preferences.lineHeightMultiplier
-                            )
-                        }
-                        item {
-                            Spacer(modifier = Modifier.height(72.dp))
+                        // Segmented Language / Mode Switcher Bar
+                        ReaderModeSegmentedControl(
+                            currentMode = uiState.preferences.readerMode,
+                            onModeSelected = { mode -> viewModel.setReaderMode(mode) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 6.dp)
+                        )
+
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            itemsIndexed(
+                                items = uiState.verses,
+                                key = { _, item -> item.id }
+                            ) { index, verse ->
+                                VerseCard(
+                                    index = index + 1,
+                                    verse = verse,
+                                    readerMode = uiState.preferences.readerMode,
+                                    fontScale = uiState.preferences.fontSizeScale,
+                                    lineHeightMultiplier = uiState.preferences.lineHeightMultiplier
+                                )
+                            }
+                            item {
+                                Spacer(modifier = Modifier.height(72.dp))
+                            }
                         }
                     }
 
@@ -281,6 +256,87 @@ fun ReaderScreen(
                     onKeepScreenOnChange = { enabled -> viewModel.setKeepScreenOn(enabled) },
                     onReaderModeChange = { mode -> viewModel.setReaderMode(mode) }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun ReaderModeSegmentedControl(
+    currentMode: ReaderMode,
+    onModeSelected: (ReaderMode) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val modes = listOf(
+        Triple(ReaderMode.PARALLEL, "දෙබසම", Icons.Default.Translate),
+        Triple(ReaderMode.PALI_ONLY, "පාළි", Icons.AutoMirrored.Filled.MenuBook),
+        Triple(ReaderMode.SINHALA_ONLY, "සිංහල", Icons.Default.AutoStories)
+    )
+
+    Surface(
+        modifier = modifier.height(44.dp),
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(3.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            modes.forEach { (mode, label, icon) ->
+                val isSelected = currentMode == mode
+                val targetBgColor = if (isSelected) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    Color.Transparent
+                }
+                val targetContentColor = if (isSelected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
+                val bgColor by animateColorAsState(
+                    targetValue = targetBgColor,
+                    label = "segmentBg"
+                )
+                val contentColor by animateColorAsState(
+                    targetValue = targetContentColor,
+                    label = "segmentContent"
+                )
+
+                Surface(
+                    onClick = { onModeSelected(mode) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    shape = RoundedCornerShape(19.dp),
+                    color = bgColor,
+                    border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)) else null,
+                    shadowElevation = if (isSelected) 2.dp else 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = contentColor,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            ),
+                            color = contentColor
+                        )
+                    }
+                }
             }
         }
     }
