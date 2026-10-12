@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
@@ -118,18 +119,18 @@ fun ReaderScreen(
                         Column {
                             Text(
                                 text = uiState.sutta?.titleSinhala ?: "පිරිත් සූත්‍රය",
+                                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                maxLines = 1
                             )
                             uiState.sutta?.let {
                                 Text(
                                     text = it.titlePali,
+                                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    maxLines = 1
                                 )
                             }
                         }
