@@ -571,14 +571,21 @@ def main():
         total_suttas += 1
         
         v_num = 1
-        for p, s in extracted_verses:
-            p_clean = clean_verse_text(p)
-            s_clean = clean_verse_text(s)
+        for item in extracted_verses:
+            if len(item) == 3:
+                v_num_item, p, s = item
+                p_clean = p.strip()
+                s_clean = s.strip()
+            else:
+                p, s = item
+                p_clean = clean_verse_text(p)
+                s_clean = clean_verse_text(s)
+                v_num_item = v_num
+                v_num += 1
             cursor.execute("""
                 INSERT INTO verses (suttaId, verseNumber, paliText, sinhalaMeaning)
                 VALUES (?, ?, ?, ?)
-            """, (s_id, v_num, p_clean, s_clean))
-            v_num += 1
+            """, (s_id, v_num_item, p_clean, s_clean))
             total_verses += 1
             
         print(f"  -> Successfully stored {len(extracted_verses)} verses.")

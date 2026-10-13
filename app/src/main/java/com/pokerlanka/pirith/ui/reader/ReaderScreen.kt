@@ -213,9 +213,9 @@ fun ReaderScreen(
                             itemsIndexed(
                                 items = uiState.verses,
                                 key = { _, item -> item.id }
-                            ) { index, verse ->
+                            ) { _, verse ->
                                 VerseCard(
-                                    index = index + 1,
+                                    index = verse.verseNumber,
                                     verse = verse,
                                     readerMode = uiState.preferences.readerMode,
                                     fontScale = uiState.preferences.fontSizeScale,
@@ -356,6 +356,11 @@ fun VerseCard(
     val sinhalaFontSize = (15 * fontScale).sp
     val sinhalaLineHeight = (23 * fontScale * lineHeightMultiplier).sp
 
+    // Check if this verse has matching numbered lists that can be interleaved
+    val interleaveData = remember(verse.id) {
+        parseInterleavableVerse(verse.paliText, verse.sinhalaMeaning)
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -391,42 +396,154 @@ fun VerseCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Pali Verse
-            if (readerMode == ReaderMode.PARALLEL || readerMode == ReaderMode.PALI_ONLY) {
-                Text(
-                    text = verse.paliText,
-                    fontSize = paliFontSize,
-                    lineHeight = paliLineHeight,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            if (readerMode == ReaderMode.PARALLEL && interleaveData != null) {
+                // Interleaved rendering: Pali header, Sinhala header, then each pair
+                if (interleaveData.paliHeader.isNotBlank()) {
+                    Text(
+                        text = interleaveData.paliHeader,
+                        fontSize = paliFontSize,
+                        lineHeight = paliLineHeight,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                if (interleaveData.sinhalaHeader.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = interleaveData.sinhalaHeader,
+                        fontSize = sinhalaFontSize,
+                        lineHeight = sinhalaLineHeight,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
-            // Divider in parallel mode
-            if (readerMode == ReaderMode.PARALLEL && verse.sinhalaMeaning.isNotBlank()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(
                     thickness = 0.5.dp,
                     color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-            }
 
-            // Sinhala Meaning
-            if (readerMode == ReaderMode.PARALLEL || readerMode == ReaderMode.SINHALA_ONLY) {
-                Text(
-                    text = verse.sinhalaMeaning,
-                    fontSize = sinhalaFontSize,
-                    lineHeight = sinhalaLineHeight,
-                    fontWeight = FontWeight.Normal,
-                    color = if (readerMode == ReaderMode.PARALLEL)
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    else
-                        MaterialTheme.colorScheme.onSurface
-                )
+                // Each numbered pair: Pali line then Sinhala meaning
+                interleaveData.pairs.forEachIndexed { i, pair ->
+                    val sinhalaText = pair.second
+                        .replaceFirst(Regex("^\\d+\\.\\s*"), "")
+                        .replaceFirst(Regex("^[^:]+:\\s*"), "")
+                        .trim()
+
+                    Text(
+                        text = pair.first,
+                        fontSize = paliFontSize,
+                        lineHeight = paliLineHeight,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = sinhalaText,
+                        fontSize = sinhalaFontSize,
+                        lineHeight = sinhalaLineHeight,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (i < interleaveData.pairs.size - 1) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
+            } else {
+                // Normal rendering (non-interleaved)
+
+                // Pali Verse
+                if (readerMode == ReaderMode.PARALLEL || readerMode == ReaderMode.PALI_ONLY) {
+                    Text(
+                        text = verse.paliText,
+                        fontSize = paliFontSize,
+                        lineHeight = paliLineHeight,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                // Divider in parallel mode
+                if (readerMode == ReaderMode.PARALLEL && verse.sinhalaMeaning.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                // Sinhala Meaning
+                if (readerMode == ReaderMode.PARALLEL || readerMode == ReaderMode.SINHALA_ONLY) {
+                    Text(
+                        text = verse.sinhalaMeaning,
+                        fontSize = sinhalaFontSize,
+                        lineHeight = sinhalaLineHeight,
+                        fontWeight = FontWeight.Normal,
+                        color = if (readerMode == ReaderMode.PARALLEL)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
     }
+}
+
+/**
+ * Data class holding parsed interleave information for a verse.
+ */
+private data class InterleaveData(
+    val paliHeader: String,
+    val sinhalaHeader: String,
+    val pairs: List<Pair<String, String>>
+)
+
+/**
+ * Parses paliText and sinhalaMeaning to check if they contain matching numbered lists.
+ * Returns InterleaveData if both have the same count of numbered items (≥ 2), null otherwise.
+ */
+private fun parseInterleavableVerse(paliText: String, sinhalaMeaning: String): InterleaveData? {
+    val paliParsed = splitHeaderAndNumberedItems(paliText) ?: return null
+    val sinhalaParsed = splitHeaderAndNumberedItems(sinhalaMeaning) ?: return null
+    if (paliParsed.second.size != sinhalaParsed.second.size) return null
+    if (paliParsed.second.size < 2) return null
+
+    val pairs = paliParsed.second.zip(sinhalaParsed.second)
+    return InterleaveData(
+        paliHeader = paliParsed.first,
+        sinhalaHeader = sinhalaParsed.first,
+        pairs = pairs
+    )
+}
+
+/**
+ * Splits text into a header portion and a list of numbered items.
+ * Numbered items are lines matching the pattern "N. ..." (e.g., "1. හේතුපච්චයෝති").
+ */
+private fun splitHeaderAndNumberedItems(text: String): Pair<String, List<String>>? {
+    val lines = text.split("\n")
+    val numberPattern = Regex("^\\d+\\.\\s")
+    var firstNumberedIndex = -1
+
+    for (i in lines.indices) {
+        if (numberPattern.containsMatchIn(lines[i].trim())) {
+            firstNumberedIndex = i
+            break
+        }
+    }
+
+    if (firstNumberedIndex < 0) return null
+
+    val header = lines.subList(0, firstNumberedIndex)
+        .joinToString("\n").trim()
+    val items = lines.subList(firstNumberedIndex, lines.size)
+        .filter { it.isNotBlank() }
+
+    return if (items.size >= 2) Pair(header, items) else null
 }
 
 @Composable
