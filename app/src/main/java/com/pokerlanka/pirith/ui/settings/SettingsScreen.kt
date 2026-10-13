@@ -60,9 +60,9 @@ fun SettingsScreen(
     }
 
     val currentReaderModeName = when (preferences.readerMode) {
-        ReaderMode.PARALLEL -> "සමාන්තර"
-        ReaderMode.PALI_ONLY -> "පාලි පමණි"
-        ReaderMode.SINHALA_ONLY -> "සිංහල පමණි"
+        ReaderMode.PARALLEL -> "දෙබසම"
+        ReaderMode.PALI_ONLY -> "පාලි"
+        ReaderMode.SINHALA_ONLY -> "සිංහල"
     }
 
     Scaffold(

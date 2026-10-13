@@ -11,6 +11,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,6 +74,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,6 +85,8 @@ import com.pokerlanka.pirith.domain.model.Verse
 import com.pokerlanka.pirith.ui.theme.PirithTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,15 +102,25 @@ fun ReaderScreen(
 
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
+    val isDragged by listState.interactionSource.collectIsDraggedAsState()
     var showSettingsSheet by remember { mutableStateOf(false) }
 
-    // Auto-scroll loop
+    // Auto-scroll loop - survives manual drag interruptions via supervisorScope
     LaunchedEffect(uiState.isAutoScrolling, uiState.autoScrollSpeed) {
         if (uiState.isAutoScrolling) {
             val pixelsPerStep = 2f * uiState.autoScrollSpeed
-            while (isActive && uiState.isAutoScrolling) {
-                listState.scrollBy(pixelsPerStep)
-                delay(16L) // ~60 FPS smooth scroll
+            supervisorScope {
+                while (isActive && uiState.isAutoScrolling) {
+                    if (!isDragged) {
+                        val scrollJob = launch {
+                            listState.scrollBy(pixelsPerStep)
+                        }
+                        scrollJob.join()
+                    } else {
+                        delay(100L)
+                    }
+                    delay(16L) // ~60 FPS smooth scroll
+                }
             }
         }
     }
@@ -274,7 +288,7 @@ fun ReaderModeSegmentedControl(
 ) {
     val modes = listOf(
         Triple(ReaderMode.PARALLEL, "දෙබසම", Icons.Default.Translate),
-        Triple(ReaderMode.PALI_ONLY, "පාළි", Icons.AutoMirrored.Filled.MenuBook),
+        Triple(ReaderMode.PALI_ONLY, "පාලි", Icons.AutoMirrored.Filled.MenuBook),
         Triple(ReaderMode.SINHALA_ONLY, "සිංහල", Icons.Default.AutoStories)
     )
 
@@ -635,17 +649,17 @@ fun ReaderSettingsBottomSheet(
                 .padding(bottom = 36.dp)
         ) {
             Text(
-                text = "කියවීමේ සැකසුම් (Reader Settings)",
+                text = if (preferences.showEnglishNames) "කියවීමේ සැකසුම් (Reader Settings)" else "කියවීමේ සැකසුම්",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Display Mode
             Text(
-                text = "පෙන්වන ආකාරය (Display Mode)",
+                text = if (preferences.showEnglishNames) "පෙන්වන ආකාරය (Display Mode)" else "පෙන්වන ආකාරය",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -655,27 +669,30 @@ fun ReaderSettingsBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
+                    modifier = Modifier.weight(1f),
                     selected = preferences.readerMode == ReaderMode.PARALLEL,
                     onClick = { onReaderModeChange(ReaderMode.PARALLEL) },
-                    label = { Text("සමාන්තර") },
+                    label = { Text("දෙබසම", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
                 FilterChip(
+                    modifier = Modifier.weight(1f),
                     selected = preferences.readerMode == ReaderMode.PALI_ONLY,
                     onClick = { onReaderModeChange(ReaderMode.PALI_ONLY) },
-                    label = { Text("පාලි පමණි") },
+                    label = { Text("පාලි", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
                 FilterChip(
+                    modifier = Modifier.weight(1f),
                     selected = preferences.readerMode == ReaderMode.SINHALA_ONLY,
                     onClick = { onReaderModeChange(ReaderMode.SINHALA_ONLY) },
-                    label = { Text("සිංහල පමණි") },
+                    label = { Text("සිංහල", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -683,32 +700,35 @@ fun ReaderSettingsBottomSheet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Reading Theme Switcher
             Text(
-                text = "තේමාව (Theme)",
+                text = if (preferences.showEnglishNames) "තේමාව (Theme)" else "තේමාව",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 AppTheme.entries.forEach { theme ->
                     val isSelected = preferences.appTheme == theme
                     FilterChip(
+                        modifier = Modifier.weight(1f),
                         selected = isSelected,
                         onClick = { onThemeChange(theme) },
                         label = {
                             Text(
-                                when (theme) {
-                                    AppTheme.SYSTEM -> "පද්ධතිය (System)"
-                                    AppTheme.LIGHT -> "දිවා (Light)"
-                                    AppTheme.DARK -> "රාත්‍රී (Dark)"
-                                    AppTheme.SEPIA -> "සෙපියා (Sepia)"
-                                }
+                                text = when (theme) {
+                                    AppTheme.SYSTEM -> "පද්ධතිය"
+                                    AppTheme.LIGHT -> "දිවා"
+                                    AppTheme.DARK -> "රාත්‍රී"
+                                    AppTheme.SEPIA -> "සෙපියා"
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(
@@ -719,7 +739,7 @@ fun ReaderSettingsBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Font Size Slider
             Row(
@@ -728,7 +748,7 @@ fun ReaderSettingsBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "අකුරු ප්‍රමාණය (Font Size)",
+                    text = if (preferences.showEnglishNames) "අකුරු ප්‍රමාණය (Font Size)" else "අකුරු ප්‍රමාණය",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

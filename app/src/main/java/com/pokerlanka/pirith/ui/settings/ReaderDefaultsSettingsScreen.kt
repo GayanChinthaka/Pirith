@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pokerlanka.pirith.domain.model.ReaderMode
@@ -101,27 +102,30 @@ fun ReaderDefaultsSettingsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         FilterChip(
+                            modifier = Modifier.weight(1f),
                             selected = preferences.readerMode == ReaderMode.PARALLEL,
                             onClick = { viewModel.setReaderMode(ReaderMode.PARALLEL) },
-                            label = { Text("සමාන්තර") },
+                            label = { Text("දෙබසම", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
                                 selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
                         FilterChip(
+                            modifier = Modifier.weight(1f),
                             selected = preferences.readerMode == ReaderMode.PALI_ONLY,
                             onClick = { viewModel.setReaderMode(ReaderMode.PALI_ONLY) },
-                            label = { Text("පාලි පමණි") },
+                            label = { Text("පාලි", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
                                 selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
                         FilterChip(
+                            modifier = Modifier.weight(1f),
                             selected = preferences.readerMode == ReaderMode.SINHALA_ONLY,
                             onClick = { viewModel.setReaderMode(ReaderMode.SINHALA_ONLY) },
-                            label = { Text("සිංහල පමණි") },
+                            label = { Text("සිංහල", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
                                 selectedLabelColor = MaterialTheme.colorScheme.onPrimary
