@@ -29,14 +29,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AutoStories
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Translate
@@ -168,17 +165,6 @@ fun ReaderScreen(
                             )
                         }
 
-                        // Favorite Toggle
-                        uiState.sutta?.let { sutta ->
-                            IconButton(onClick = { viewModel.toggleFavorite() }) {
-                                Icon(
-                                    imageVector = if (sutta.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                    contentDescription = "Toggle favorite",
-                                    tint = if (sutta.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-
                         // Reader Settings Sheet Button
                         IconButton(onClick = { showSettingsSheet = true }) {
                             Icon(Icons.Default.Tune, contentDescription = "Reader Settings")
@@ -257,8 +243,7 @@ fun ReaderScreen(
                     ) {
                         FloatingAutoScrollControls(
                             currentSpeed = uiState.autoScrollSpeed,
-                            onSpeedSelected = { speed -> viewModel.setAutoScrollSpeed(speed) },
-                            onPauseClick = { viewModel.toggleAutoScroll() }
+                            onSpeedSelected = { speed -> viewModel.setAutoScrollSpeed(speed) }
                         )
                     }
                 }
@@ -567,10 +552,9 @@ private fun splitHeaderAndNumberedItems(text: String): Pair<String, List<String>
 @Composable
 fun FloatingAutoScrollControls(
     currentSpeed: Float,
-    onSpeedSelected: (Float) -> Unit,
-    onPauseClick: () -> Unit
+    onSpeedSelected: (Float) -> Unit
 ) {
-    val speeds = listOf(0.25f, 0.5f, 0.75f, 1.0f)
+    val speeds = listOf(0.1f, 0.25f, 0.5f, 0.75f, 1.0f)
 
     Surface(
         shape = RoundedCornerShape(32.dp),
@@ -581,26 +565,12 @@ fun FloatingAutoScrollControls(
             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(32.dp))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            IconButton(
-                onClick = onPauseClick,
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Pause,
-                    contentDescription = "Pause",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
             speeds.forEach { speed ->
-                val isSelected = kotlin.math.abs(currentSpeed - speed) < 0.05f
+                val isSelected = kotlin.math.abs(currentSpeed - speed) < 0.04f
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
@@ -672,7 +642,15 @@ fun ReaderSettingsBottomSheet(
                     modifier = Modifier.weight(1f),
                     selected = preferences.readerMode == ReaderMode.PARALLEL,
                     onClick = { onReaderModeChange(ReaderMode.PARALLEL) },
-                    label = { Text("දෙබසම", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
+                    label = {
+                        Text(
+                            text = "දෙබසම",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -682,7 +660,15 @@ fun ReaderSettingsBottomSheet(
                     modifier = Modifier.weight(1f),
                     selected = preferences.readerMode == ReaderMode.PALI_ONLY,
                     onClick = { onReaderModeChange(ReaderMode.PALI_ONLY) },
-                    label = { Text("පාලි", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
+                    label = {
+                        Text(
+                            text = "පාලි",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -692,7 +678,15 @@ fun ReaderSettingsBottomSheet(
                     modifier = Modifier.weight(1f),
                     selected = preferences.readerMode == ReaderMode.SINHALA_ONLY,
                     onClick = { onReaderModeChange(ReaderMode.SINHALA_ONLY) },
-                    label = { Text("සිංහල", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
+                    label = {
+                        Text(
+                            text = "සිංහල",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -716,7 +710,6 @@ fun ReaderSettingsBottomSheet(
                 AppTheme.entries.forEach { theme ->
                     val isSelected = preferences.appTheme == theme
                     FilterChip(
-                        modifier = Modifier.weight(1f),
                         selected = isSelected,
                         onClick = { onThemeChange(theme) },
                         label = {
@@ -727,8 +720,8 @@ fun ReaderSettingsBottomSheet(
                                     AppTheme.DARK -> "රාත්‍රී"
                                     AppTheme.SEPIA -> "සෙපියා"
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center
+                                maxLines = 1,
+                                softWrap = false
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(

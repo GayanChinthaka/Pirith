@@ -59,7 +59,7 @@ class UserPreferencesRepository(private val context: Context) {
             val modeStr = prefs[Keys.READER_MODE] ?: ReaderMode.PARALLEL.name
             val mode = runCatching { ReaderMode.valueOf(modeStr) }.getOrDefault(ReaderMode.PARALLEL)
             val rawSpeed = prefs[Keys.AUTO_SCROLL_SPEED] ?: 0.5f
-            val speed = if (rawSpeed > 1.0f || rawSpeed < 0.25f) 0.5f else rawSpeed
+            val speed = if (rawSpeed > 1.0f || rawSpeed < 0.05f) 0.5f else rawSpeed
             val themeStr = prefs[Keys.APP_THEME] ?: AppTheme.SYSTEM.name
             val theme = runCatching { AppTheme.valueOf(themeStr) }.getOrDefault(AppTheme.SYSTEM)
             val keepScreen = prefs[Keys.KEEP_SCREEN_ON] ?: true

@@ -94,7 +94,7 @@ fun GuideSettingsScreen(
             GuideCard(
                 icon = Icons.Default.Speed,
                 title = if (showEnglish) "ස්වයංක්‍රීය අනුචලනය (Auto-scroll)" else "ස්වයංක්‍රීය අනුචලනය",
-                description = "පිරිත් කියවන අතරතුර පහළ ඇති Floating Play බොත්තම එබීමෙන් ස්වයංක්‍රීයව පහළට සෙමෙන් Scroll වීම ආරම්භ වේ. එහි වේගය 0.25x, 0.5x, 0.75x, 1.0x ආදී වශයෙන් ඔබට පහසු පරිදි වෙනස් කරගත හැක."
+                description = "පිරිත් කියවන අතරතුර ඉහළ ඇති Play බොත්තම එබීමෙන් ස්වයංක්‍රීයව පහළට සෙමෙන් Scroll වීම ආරම්භ වේ. එහි වේගය 0.1x, 0.25x, 0.5x, 0.75x, 1.0x ආදී වශයෙන් ඔබට පහසු පරිදි වෙනස් කරගත හැක."
             )
 
             GuideCard(

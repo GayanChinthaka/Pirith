@@ -108,12 +108,14 @@ fun AppearanceSettingsScreen(
                                 onClick = { viewModel.setAppTheme(theme) },
                                 label = {
                                     Text(
-                                        when (theme) {
+                                        text = when (theme) {
                                             AppTheme.SYSTEM -> "පද්ධතිය"
                                             AppTheme.LIGHT -> "දිවා"
                                             AppTheme.DARK -> "රාත්‍රී"
                                             AppTheme.SEPIA -> "සෙපියා"
-                                        }
+                                        },
+                                        maxLines = 1,
+                                        softWrap = false
                                     )
                                 },
                                 colors = FilterChipDefaults.filterChipColors(
