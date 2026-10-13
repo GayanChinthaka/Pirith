@@ -27,7 +27,8 @@ data class UserPreferences(
     val readerMode: ReaderMode = ReaderMode.PARALLEL,
     val autoScrollSpeed: Float = 0.5f,
     val appTheme: AppTheme = AppTheme.SYSTEM,
-    val keepScreenOn: Boolean = true
+    val keepScreenOn: Boolean = true,
+    val showEnglishNames: Boolean = false
 )
 
 class UserPreferencesRepository(private val context: Context) {
@@ -39,6 +40,7 @@ class UserPreferencesRepository(private val context: Context) {
         val AUTO_SCROLL_SPEED = floatPreferencesKey("auto_scroll_speed")
         val APP_THEME = stringPreferencesKey("app_theme")
         val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
+        val SHOW_ENGLISH_NAMES = booleanPreferencesKey("show_english_names")
         val CUSTOM_COLLECTIONS = stringPreferencesKey("custom_collections_json")
         val TAB_ORDER = stringPreferencesKey("tab_order_json")
     }
@@ -61,6 +63,7 @@ class UserPreferencesRepository(private val context: Context) {
             val themeStr = prefs[Keys.APP_THEME] ?: AppTheme.SYSTEM.name
             val theme = runCatching { AppTheme.valueOf(themeStr) }.getOrDefault(AppTheme.SYSTEM)
             val keepScreen = prefs[Keys.KEEP_SCREEN_ON] ?: true
+            val showEnglish = prefs[Keys.SHOW_ENGLISH_NAMES] ?: false
 
             UserPreferences(
                 fontSizeScale = fontSize,
@@ -68,7 +71,8 @@ class UserPreferencesRepository(private val context: Context) {
                 readerMode = mode,
                 autoScrollSpeed = speed,
                 appTheme = theme,
-                keepScreenOn = keepScreen
+                keepScreenOn = keepScreen,
+                showEnglishNames = showEnglish
             )
         }
 
@@ -94,6 +98,10 @@ class UserPreferencesRepository(private val context: Context) {
 
     suspend fun setKeepScreenOn(enabled: Boolean) {
         context.dataStore.edit { it[Keys.KEEP_SCREEN_ON] = enabled }
+    }
+
+    suspend fun setShowEnglishNames(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.SHOW_ENGLISH_NAMES] = enabled }
     }
 
     val customCollectionsFlow: Flow<List<SuttaCollection>> = context.dataStore.data

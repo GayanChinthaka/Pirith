@@ -12,5 +12,6 @@ data class HomeUiState(
     val selectedCategory: String = "සියල්ල",
     val searchQuery: String = "",
     val onlyFavorites: Boolean = false,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val showEnglishNames: Boolean = false
 )

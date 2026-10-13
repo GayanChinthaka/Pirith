@@ -51,7 +51,7 @@ fun ReaderDefaultsSettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "කියවීමේ පෙරනිමි (Reader Defaults)",
+                        text = if (preferences.showEnglishNames) "කියවීමේ පෙරනිමි (Reader Defaults)" else "කියවීමේ පෙරනිමි",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -168,7 +168,7 @@ fun ReaderDefaultsSettingsScreen(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "කියවන අතරතුර තිරය Off වීම වළකයි (Keep Screen On)",
+                                text = if (preferences.showEnglishNames) "කියවන අතරතුර තිරය Off වීම වළකයි (Keep Screen On)" else "කියවන අතරතුර තිරය Off වීම වළකයි",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

@@ -133,11 +133,13 @@ fun HomeScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Text(
-                                text = "Maha Pirith & Suttas",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            if (uiState.showEnglishNames) {
+                                Text(
+                                    text = "Maha Pirith & Suttas",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 },
@@ -328,7 +330,8 @@ fun HomeScreen(
                             onToggleFavorite = { onToggleFavorite(sutta) },
                             onAddToCollection = {
                                 managingSuttaForCollections = sutta
-                            }
+                            },
+                            showEnglishNames = uiState.showEnglishNames
                         )
                     }
                 }
@@ -447,7 +450,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${sutta.id}. ${sutta.titleSinhala}",
+                    text = if (uiState.showEnglishNames && sutta.titlePali.isNotBlank()) "${sutta.id}. ${sutta.titleSinhala} (${sutta.titlePali})" else "${sutta.id}. ${sutta.titleSinhala}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
@@ -545,7 +548,8 @@ fun SuttaCard(
     sutta: Sutta,
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit,
-    onAddToCollection: () -> Unit = {}
+    onAddToCollection: () -> Unit = {},
+    showEnglishNames: Boolean = false
 ) {
     Card(
         modifier = Modifier
@@ -591,14 +595,16 @@ fun SuttaCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = sutta.titlePali,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (showEnglishNames && sutta.titlePali.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = sutta.titlePali,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 Spacer(modifier = Modifier.height(6.dp))
                 // Category Chip Tag
                 Surface(

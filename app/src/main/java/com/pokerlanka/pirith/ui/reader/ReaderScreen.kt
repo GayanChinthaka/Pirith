@@ -124,14 +124,18 @@ fun ReaderScreen(
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1
                             )
-                            uiState.sutta?.let {
-                                Text(
-                                    text = it.titlePali,
-                                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1
-                                )
+                            if (uiState.preferences.showEnglishNames) {
+                                uiState.sutta?.let {
+                                    if (it.titlePali.isNotBlank()) {
+                                        Text(
+                                            text = it.titlePali,
+                                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1
+                                        )
+                                    }
+                                }
                             }
                         }
                     },

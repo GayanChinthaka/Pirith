@@ -1,7 +1,5 @@
 package com.pokerlanka.pirith.ui.settings
 
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Refresh
@@ -35,7 +32,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,16 +48,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavController
 import com.pokerlanka.pirith.BuildConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdaterSettingsScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: SettingsViewModel = koinViewModel()
 ) {
+    val preferences by viewModel.preferences.collectAsState()
+    val showEnglish = preferences.showEnglishNames
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -84,7 +85,7 @@ fun UpdaterSettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "යාවත්කාලීන (Updater)",
+                        text = if (showEnglish) "යාවත්කාලීන (Updater)" else "යාවත්කාලීන",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -187,54 +188,6 @@ fun UpdaterSettingsScreen(
                             text = if (isChecking) "පරීක්ෂා කරමින්..." else "යාවත්කාලීන පරීක්ෂා කරන්න",
                             fontWeight = FontWeight.SemiBold
                         )
-                    }
-                }
-            }
-
-            // Info Card about Releases
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text(
-                        text = "නව නිකුතුවන් (Official Releases)",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "පිරිත් යෙදුමේ සියලුම නවතම නිකුතුවන් (Releases) සහ වැඩිදියුණු කිරීම් නිල GitHub පිටුව හරහා ලබාගත හැක.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(Modifier.height(4.dp))
-
-                    OutlinedButton(
-                        onClick = {
-                            val intent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("https://github.com/GayanChinthaka/Pirith")
-                            )
-                            context.startActivity(intent)
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.size(8.dp))
-                        Text("GitHub පිටුවට යන්න")
                     }
                 }
             }

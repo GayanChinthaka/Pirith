@@ -62,8 +62,9 @@ class HomeViewModel(
         _allSuttas,
         _customCollections,
         _tabOrder,
+        repository.getUserPreferences(),
         _filterFlow
-    ) { suttas, customCollections, tabOrder, filter ->
+    ) { suttas, customCollections, tabOrder, userPrefs, filter ->
         val trimmedQuery = filter.query.trim()
         val customCollection = customCollections.find { "coll_${it.id}" == filter.category || it.name == filter.category }
 
@@ -135,7 +136,8 @@ class HomeViewModel(
             selectedCategory = filter.category,
             searchQuery = filter.query,
             onlyFavorites = filter.onlyFavorites,
-            isLoading = false
+            isLoading = false,
+            showEnglishNames = userPrefs.showEnglishNames
         )
     }.stateIn(
         scope = viewModelScope,

@@ -26,5 +26,7 @@ interface PirithRepository {
 
     fun getTabOrder(): Flow<List<String>>
     suspend fun updateTabOrder(tabKeys: List<String>)
+
+    fun getUserPreferences(): Flow<com.pokerlanka.pirith.data.preferences.UserPreferences>
 }
 

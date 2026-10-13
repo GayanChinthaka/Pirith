@@ -185,4 +185,10 @@ class SettingsViewModel(
             preferencesRepository.setKeepScreenOn(enabled)
         }
     }
+
+    fun setShowEnglishNames(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setShowEnglishNames(enabled)
+        }
+    }
 }

@@ -29,6 +29,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.material3.Switch
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,13 +45,14 @@ fun AppearanceSettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val preferences by viewModel.preferences.collectAsState()
+    val showEnglish = preferences.showEnglishNames
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "පෙනුම (Appearance)",
+                        text = if (showEnglish) "පෙනුම සහ සංදර්ශනය (Appearance & Display)" else "පෙනුම සහ සංදර්ශනය",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -81,7 +84,7 @@ fun AppearanceSettingsScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "යෙදුම් තේමාව (App Theme)",
+                        text = if (showEnglish) "යෙදුම් තේමාව (App Theme)" else "යෙදුම් තේමාව",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
@@ -120,6 +123,45 @@ fun AppearanceSettingsScreen(
                             )
                         }
                     }
+                }
+            }
+
+            // Show English Names Toggle Card
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 16.dp)
+                    ) {
+                        Text(
+                            text = if (showEnglish) "ඉංග්‍රීසි නම් පෙන්වන්න (Show English Names)" else "ඉංග්‍රීසි නම් පෙන්වන්න",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "පිරිත් සූත්‍ර සහ මෙනු වල ඉංග්‍රීසි නම් පෙන්වීම හෝ සැඟවීම",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = preferences.showEnglishNames,
+                        onCheckedChange = { viewModel.setShowEnglishNames(it) }
+                    )
                 }
             }
         }

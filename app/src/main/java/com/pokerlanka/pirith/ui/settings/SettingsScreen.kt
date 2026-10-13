@@ -50,12 +50,13 @@ fun SettingsScreen(
 ) {
     val preferences by viewModel.preferences.collectAsState()
     val scrollState = rememberScrollState()
+    val showEnglish = preferences.showEnglishNames
 
     val currentThemeName = when (preferences.appTheme) {
-        AppTheme.SYSTEM -> "පද්ධතිය (System)"
-        AppTheme.LIGHT -> "දිවා (Light)"
-        AppTheme.DARK -> "රාත්‍රී (Dark)"
-        AppTheme.SEPIA -> "සෙපියා (Sepia)"
+        AppTheme.SYSTEM -> if (showEnglish) "පද්ධතිය (System)" else "පද්ධතිය"
+        AppTheme.LIGHT -> if (showEnglish) "දිවා (Light)" else "දිවා"
+        AppTheme.DARK -> if (showEnglish) "රාත්‍රී (Dark)" else "රාත්‍රී"
+        AppTheme.SEPIA -> if (showEnglish) "සෙපියා (Sepia)" else "සෙපියා"
     }
 
     val currentReaderModeName = when (preferences.readerMode) {
@@ -69,7 +70,7 @@ fun SettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "සැකසුම් (Settings)",
+                        text = if (showEnglish) "සැකසුම් (Settings)" else "සැකසුම්",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -97,11 +98,11 @@ fun SettingsScreen(
             Material3SettingsGroup(
                 title = "ප්‍රධාන සැකසුම්",
                 items = listOf(
-                    // 1. Appearance
+                    // 1. Appearance & Display
                     Material3SettingsItem(
                         icon = Icons.Default.DarkMode,
-                        title = { Text("පෙනුම (Appearance)") },
-                        description = { Text("යෙදුම් තේමාව: $currentThemeName") },
+                        title = { Text(if (showEnglish) "පෙනුම සහ සංදර්ශනය (Appearance & Display)" else "පෙනුම සහ සංදර්ශනය") },
+                        description = { Text("තේමාව: $currentThemeName • සංදර්ශන සැකසුම්") },
                         trailingContent = {
                             Icon(
                                 imageVector = Icons.Default.ChevronRight,
@@ -116,7 +117,7 @@ fun SettingsScreen(
                     // 2. Reader Defaults
                     Material3SettingsItem(
                         icon = Icons.Default.Tune,
-                        title = { Text("කියවීමේ පෙරනිමි (Reader Defaults)") },
+                        title = { Text(if (showEnglish) "කියවීමේ පෙරනිමි (Reader Defaults)" else "කියවීමේ පෙරනිමි") },
                         description = { Text("$currentReaderModeName • අකුරු: ${(preferences.fontSizeScale * 100).toInt()}%") },
                         trailingContent = {
                             Icon(
@@ -132,7 +133,7 @@ fun SettingsScreen(
                     // 3. Manage Collections / Playlists
                     Material3SettingsItem(
                         icon = Icons.Default.Bookmarks,
-                        title = { Text("පිරිත් එකතු (Collections / Playlists)") },
+                        title = { Text(if (showEnglish) "පිරිත් එකතු (Collections / Playlists)" else "පිරිත් එකතු") },
                         description = { Text("එකතු කළමනාකරණය, නම් වෙනස් කිරීම සහ පෙළගැස්ම") },
                         trailingContent = {
                             Icon(
@@ -155,7 +156,7 @@ fun SettingsScreen(
                     // 3. Guide
                     Material3SettingsItem(
                         icon = Icons.AutoMirrored.Filled.HelpOutline,
-                        title = { Text("භාවිත මාර්ගෝපදේශය (Guide)") },
+                        title = { Text(if (showEnglish) "භාවිත මාර්ගෝපදේශය (Guide)" else "භාවිත මාර්ගෝපදේශය") },
                         description = { Text("100% නොබැඳි භාවිතය, සෙවීම සහ විශේෂාංග") },
                         trailingContent = {
                             Icon(
@@ -171,7 +172,7 @@ fun SettingsScreen(
                     // 4. Updater
                     Material3SettingsItem(
                         icon = Icons.Default.SystemUpdate,
-                        title = { Text("යාවත්කාලීන (Updater)") },
+                        title = { Text(if (showEnglish) "යාවත්කාලීන (Updater)" else "යාවත්කාලීන") },
                         description = { Text("අනුවාදය v${BuildConfig.VERSION_NAME} • යාවත්කාලීන පරීක්ෂාව") },
                         trailingContent = {
                             Icon(
@@ -187,7 +188,7 @@ fun SettingsScreen(
                     // 5. About
                     Material3SettingsItem(
                         icon = Icons.Default.Info,
-                        title = { Text("තොරතුරු (About)") },
+                        title = { Text(if (showEnglish) "තොරතුරු (About)" else "තොරතුරු") },
                         description = { Text("සංවර්ධක, Pokerlanka, මූලාශ්‍ර සහ කෘතඥතාව") },
                         trailingContent = {
                             Icon(
@@ -213,7 +214,7 @@ fun SettingsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "පිරිත් (Pirith) v${BuildConfig.VERSION_NAME}",
+                    text = (if (showEnglish) "පිරිත් (Pirith)" else "පිරිත්") + " v${BuildConfig.VERSION_NAME}",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary

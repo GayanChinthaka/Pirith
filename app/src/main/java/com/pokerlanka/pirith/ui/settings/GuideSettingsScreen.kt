@@ -32,23 +32,30 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GuideSettingsScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: SettingsViewModel = koinViewModel()
 ) {
+    val preferences by viewModel.preferences.collectAsState()
+    val showEnglish = preferences.showEnglishNames
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "භාවිත මාර්ගෝපදේශය (Guide)",
+                        text = if (showEnglish) "භාවිත මාර්ගෝපදේශය (Guide)" else "භාවිත මාර්ගෝපදේශය",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -74,19 +81,19 @@ fun GuideSettingsScreen(
         ) {
             GuideCard(
                 icon = Icons.Default.OfflinePin,
-                title = "100% නොබැඳි භාවිතය (Offline)",
+                title = if (showEnglish) "100% නොබැඳි භාවිතය (Offline)" else "100% නොබැඳි භාවිතය",
                 description = "මෙම යෙදුම සඳහා අන්තර්ජාල සම්බන්ධතාවයක් කිසිසේත් අවශ්‍ය නොවේ. සියලුම පිරිත් දේශනා, සූත්‍ර, ගාථා සහ ඒවායේ සම්පූර්ණ සිංහල තේරුම ඔබගේ දුරකථනය තුළම අන්තර්ගත SQLite දත්ත ගබඩාවක සුරක්ෂිතව තැන්පත් කර ඇත."
             )
 
             GuideCard(
                 icon = Icons.Default.Search,
-                title = "සෙවීම සහ වර්ගීකරණය (Search & Filter)",
+                title = if (showEnglish) "සෙවීම සහ වර්ගීකරණය (Search & Filter)" else "සෙවීම සහ වර්ගීකරණය",
                 description = "ප්‍රධාන පිටුවේ ඇති සෙවුම් තීරුව (Search Bar) මගින් ඕනෑම පිරිතක නම සිංහලෙන් හෝ ඉංග්‍රීසියෙන් ලියා ක්ෂණිකව සොයාගත හැක. එසේම 'මහා පිරිත්', 'සෙත් පිරිත්', 'වන්දනා', 'පට්ඨාන', සහ 'විශේෂ සූත්‍ර' ආදී කාණ්ඩ අනුවද පෙරා බැලිය හැක."
             )
 
             GuideCard(
                 icon = Icons.Default.Speed,
-                title = "ස්වයංක්‍රීය අනුචලනය (Auto-scroll)",
+                title = if (showEnglish) "ස්වයංක්‍රීය අනුචලනය (Auto-scroll)" else "ස්වයංක්‍රීය අනුචලනය",
                 description = "පිරිත් කියවන අතරතුර පහළ ඇති Floating Play බොත්තම එබීමෙන් ස්වයංක්‍රීයව පහළට සෙමෙන් Scroll වීම ආරම්භ වේ. එහි වේගය 0.25x, 0.5x, 0.75x, 1.0x ආදී වශයෙන් ඔබට පහසු පරිදි වෙනස් කරගත හැක."
             )
 
@@ -98,7 +105,7 @@ fun GuideSettingsScreen(
 
             GuideCard(
                 icon = Icons.AutoMirrored.Filled.MenuBook,
-                title = "ප්‍රියතම පිරිත් ලැයිස්තුව (Favorites)",
+                title = if (showEnglish) "ප්‍රියතම පිරිත් ලැයිස්තුව (Favorites)" else "ප්‍රියතම පිරිත් ලැයිස්තුව",
                 description = "ඔබ නිතර සජ්ඣායනා කරන හෝ ශ්‍රවණය කරන පිරිත් සූත්‍ර ඉදිරියේ ඇති හෘදයාකාර (Heart) ලකුණ click කිරීමෙන් ඔබගේ ප්‍රියතම ලැයිස්තුවට එක් කර පහසුවෙන් ලබාගත හැක."
             )
         }

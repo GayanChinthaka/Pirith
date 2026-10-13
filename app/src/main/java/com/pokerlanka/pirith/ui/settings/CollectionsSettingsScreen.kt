@@ -77,6 +77,8 @@ fun CollectionsSettingsScreen(
 ) {
     val allCollections by viewModel.allCollections.collectAsState()
     val allSuttas by viewModel.allSuttas.collectAsState()
+    val preferences by viewModel.preferences.collectAsState()
+    val showEnglish = preferences.showEnglishNames
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var createName by remember { mutableStateOf("") }
@@ -98,7 +100,7 @@ fun CollectionsSettingsScreen(
                 title = {
                     Column {
                         Text(
-                            text = "පිරිත් එකතු (Collections / Categories)",
+                            text = if (showEnglish) "පිරිත් එකතු (Collections / Categories)" else "පිරිත් එකතු",
                             fontWeight = FontWeight.Bold
                         )
                         Text(
@@ -424,11 +426,13 @@ fun CollectionsSettingsScreen(
                                             fontWeight = FontWeight.Medium,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
-                                        Text(
-                                            text = sutta.titlePali,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                                        if (showEnglish && sutta.titlePali.isNotBlank()) {
+                                            Text(
+                                                text = sutta.titlePali,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
 
                                     // Up/Down arrows to reorder within collection

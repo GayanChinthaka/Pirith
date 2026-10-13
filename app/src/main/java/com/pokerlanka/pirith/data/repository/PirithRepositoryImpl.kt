@@ -73,5 +73,8 @@ class PirithRepositoryImpl(
 
     override suspend fun updateTabOrder(tabKeys: List<String>) =
         userPreferencesRepository.updateTabOrder(tabKeys)
+
+    override fun getUserPreferences(): Flow<com.pokerlanka.pirith.data.preferences.UserPreferences> =
+        userPreferencesRepository.userPreferencesFlow
 }
 

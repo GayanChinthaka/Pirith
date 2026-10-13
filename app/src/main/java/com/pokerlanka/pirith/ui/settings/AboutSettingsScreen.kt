@@ -46,23 +46,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import com.pokerlanka.pirith.BuildConfig
 import com.pokerlanka.pirith.R
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutSettingsScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: SettingsViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
+    val preferences by viewModel.preferences.collectAsState()
+    val showEnglish = preferences.showEnglishNames
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "තොරතුරු (About)",
+                        text = if (showEnglish) "තොරතුරු (About)" else "තොරතුරු",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -108,7 +114,7 @@ fun AboutSettingsScreen(
 
             // App Name
             Text(
-                text = "පිරිත් (Pirith)",
+                text = if (showEnglish) "පිරිත් (Pirith)" else "පිරිත්",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -127,7 +133,7 @@ fun AboutSettingsScreen(
 
             // Developer Info Card (Mixora Style)
             AboutInfoCard(
-                title = "සංවර්ධක (Developer)",
+                title = if (showEnglish) "සංවර්ධක (Developer)" else "සංවර්ධක",
                 value = "Gayan Chinthaka",
                 icon = Icons.Default.Person
             )
@@ -136,7 +142,7 @@ fun AboutSettingsScreen(
 
             // Company Info Card (Mixora Style)
             AboutInfoCard(
-                title = "ආයතනය (Organization)",
+                title = if (showEnglish) "ආයතනය (Organization)" else "ආයතනය",
                 value = "Pokerlanka",
                 icon = Icons.Default.Business
             )
