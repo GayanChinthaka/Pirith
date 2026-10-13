@@ -14,8 +14,8 @@ android {
         applicationId = "com.pokerlanka.pirith"
         minSdk = 26
         targetSdk = 35
-        versionCode = 311
-        versionName = "3.1.1"
+        versionCode = 312
+        versionName = "3.1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -25,7 +25,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
