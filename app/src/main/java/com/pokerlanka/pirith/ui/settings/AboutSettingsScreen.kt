@@ -149,7 +149,7 @@ fun AboutSettingsScreen(
 
             Spacer(Modifier.height(14.dp))
 
-            // Source Attribution Card (pitaka.lk & tripitaka.online & namo.lk)
+            // Source Attribution Card (pitaka.lk, tripitaka.online, namo.lk, ancient-buddhist-texts.net & SuttaCentral)
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
@@ -182,7 +182,7 @@ fun AboutSettingsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Pitaka.lk • Tripitaka.online • Namo.lk",
+                                text = "Pitaka.lk • Tripitaka.online • Namo.lk\nAncient-Buddhist-Texts.net • SuttaCentral",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
