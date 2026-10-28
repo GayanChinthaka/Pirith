@@ -182,7 +182,7 @@ fun AboutSettingsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Pitaka.lk • Tripitaka.online • Namo.lk\nAncient-Buddhist-Texts.net • SuttaCentral",
+                                text = "Pitaka.lk • Tripitaka.online • Namo.lk\nAncient-Buddhist-Texts.net • SuttaCentral • Buddhismvision.com",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
