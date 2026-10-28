@@ -2,7 +2,7 @@
 """
 scripts/add_new_suttas.py
 Run after add_atasil.py (and before set_titles.py). Adds the audited items in scripts/data/new_suttas/<id>.json
-(ids 35-48, built from pitaka.lk and checked against tripitaka.online and other sources) and slots each one
+(ids 35-54, built from pitaka.lk and checked against tripitaka.online and other sources) and slots each one
 into the list right after its anchor sutta.
 """
 import glob
@@ -16,7 +16,8 @@ DB_PATH = os.path.join(BASE, "..", "app", "src", "main", "assets", "databases", 
 # new id -> id of the sutta it is placed after
 AFTER = {35: 11, 36: 35, 37: 36,
          43: 12, 44: 43, 45: 44, 46: 45, 47: 46, 48: 47,
-         38: 31, 39: 38, 40: 39, 41: 40, 42: 41}
+         38: 31, 39: 38, 40: 39, 41: 40, 42: 41,
+         49: 42, 50: 49, 51: 50, 52: 51, 53: 52, 54: 53}
 
 
 def main():

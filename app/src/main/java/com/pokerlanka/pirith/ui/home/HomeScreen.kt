@@ -450,7 +450,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = if (uiState.showEnglishNames && sutta.titlePali.isNotBlank()) "${sutta.id}. ${sutta.titleSinhala} (${sutta.titlePali})" else "${sutta.id}. ${sutta.titleSinhala}",
+                    text = if (uiState.showEnglishNames && sutta.titlePali.isNotBlank()) "${sutta.titleSinhala} (${sutta.titlePali})" else sutta.titleSinhala,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
@@ -567,24 +567,6 @@ fun SuttaCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Index Number Badge
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "${sutta.id}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-
-            Spacer(modifier = Modifier.width(14.dp))
-
             // Text Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(

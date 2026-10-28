@@ -219,7 +219,6 @@ fun ReaderScreen(
                                 key = { _, item -> item.id }
                             ) { _, verse ->
                                 VerseCard(
-                                    index = verse.verseNumber,
                                     verse = verse,
                                     readerMode = uiState.preferences.readerMode,
                                     fontScale = uiState.preferences.fontSizeScale,
@@ -348,7 +347,6 @@ fun ReaderModeSegmentedControl(
 
 @Composable
 fun VerseCard(
-    index: Int,
     verse: Verse,
     readerMode: ReaderMode,
     fontScale: Float,
@@ -377,28 +375,6 @@ fun VerseCard(
                 .fillMaxWidth()
                 .padding(18.dp)
         ) {
-            // Verse Number Badge
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                ) {
-                    Text(
-                        text = "ගාථා අංක $index",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
             if (readerMode == ReaderMode.PARALLEL && interleaveData != null) {
                 // Interleaved rendering: Pali header, Sinhala header, then each pair
                 if (interleaveData.paliHeader.isNotBlank()) {
