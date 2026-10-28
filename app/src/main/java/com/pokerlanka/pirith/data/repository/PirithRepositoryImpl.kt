@@ -7,6 +7,7 @@ import com.pokerlanka.pirith.domain.model.Sutta
 import com.pokerlanka.pirith.domain.model.SuttaCollection
 import com.pokerlanka.pirith.domain.model.Verse
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 class PirithRepositoryImpl(
@@ -47,8 +48,13 @@ class PirithRepositoryImpl(
     override fun searchSuttaIdsByVerseContent(query: String): Flow<List<Int>> =
         verseDao.searchSuttaIdsByVerseContent(query)
 
+    // Collections are stored by sutta id. Hide ids that no longer exist in the database
+    // (for example after an item is merged or removed) so counts and lists stay correct.
     override fun getCustomCollections(): Flow<List<SuttaCollection>> =
-        userPreferencesRepository.customCollectionsFlow
+        combine(userPreferencesRepository.customCollectionsFlow, suttaDao.getAllSuttas()) { collections, suttas ->
+            val existingIds = suttas.map { it.id }.toSet()
+            collections.map { coll -> coll.copy(suttaIds = coll.suttaIds.filter { it in existingIds }) }
+        }
 
     override suspend fun createCustomCollection(name: String): SuttaCollection? =
         userPreferencesRepository.createCollection(name)

@@ -432,7 +432,6 @@ fun VerseCard(
                 interleaveData.pairs.forEachIndexed { i, pair ->
                     val sinhalaText = pair.second
                         .replaceFirst(Regex("^\\d+\\.\\s*"), "")
-                        .replaceFirst(Regex("^[^:]+:\\s*"), "")
                         .trim()
 
                     Text(
