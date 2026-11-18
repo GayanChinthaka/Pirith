@@ -1,5 +1,6 @@
 package com.pokerlanka.pirith.ui.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,7 +21,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -59,6 +62,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,7 +70,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -92,6 +99,18 @@ fun HomeScreen(
     var showCreateCollectionDialog by remember { mutableStateOf(false) }
     var newCollectionName by remember { mutableStateOf("") }
     var collectionToDelete by remember { mutableStateOf<SuttaCollection?>(null) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(isSearchExpanded) {
+        if (isSearchExpanded) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    BackHandler(enabled = isSearchExpanded) {
+        isSearchExpanded = false
+        onSearchQueryChanged("")
+    }
 
     // State for Sutta Collection management bottom sheet
     var managingSuttaForCollections by remember { mutableStateOf<Sutta?>(null) }
@@ -100,31 +119,74 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    if (isSearchExpanded) {
+                        IconButton(onClick = {
+                            isSearchExpanded = false
+                            onSearchQueryChanged("")
+                        }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Close search"
+                            )
+                        }
+                    }
+                },
                 title = {
                     if (isSearchExpanded) {
-                        OutlinedTextField(
-                            value = uiState.searchQuery,
-                            onValueChange = onSearchQueryChanged,
-                            placeholder = { Text("සූත්‍ර හෝ පිරිත් සොයන්න...") },
-                            singleLine = true,
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(end = 8.dp),
-                            shape = RoundedCornerShape(24.dp),
-                            trailingIcon = {
+                                .padding(end = 8.dp)
+                                .height(40.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .padding(horizontal = 14.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                BasicTextField(
+                                    value = uiState.searchQuery,
+                                    onValueChange = onSearchQueryChanged,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .focusRequester(focusRequester),
+                                    singleLine = true,
+                                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                    decorationBox = { innerTextField ->
+                                        if (uiState.searchQuery.isEmpty()) {
+                                            Text(
+                                                text = "සොයන්න...",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                )
                                 if (uiState.searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = { onSearchQueryChanged("") }) {
-                                        Icon(Icons.Default.Close, contentDescription = "Clear search")
+                                    IconButton(
+                                        onClick = { onSearchQueryChanged("") },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "Clear search",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
                                 }
-                            },
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            )
-                        )
+                            }
+                        }
                     } else {
                         Column {
                             Text(
@@ -144,24 +206,23 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        isSearchExpanded = !isSearchExpanded
-                        if (!isSearchExpanded) onSearchQueryChanged("")
-                    }) {
-                        Icon(
-                            if (isSearchExpanded) Icons.Default.Close else Icons.Default.Search,
-                            contentDescription = "Search"
-                        )
-                    }
-                    IconButton(onClick = onToggleFavoritesOnly) {
-                        Icon(
-                            if (uiState.onlyFavorites) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Favorites filter",
-                            tint = if (uiState.onlyFavorites) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    if (!isSearchExpanded) {
+                        IconButton(onClick = { isSearchExpanded = true }) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = "Search"
+                            )
+                        }
+                        IconButton(onClick = onToggleFavoritesOnly) {
+                            Icon(
+                                if (uiState.onlyFavorites) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Favorites filter",
+                                tint = if (uiState.onlyFavorites) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(onClick = onSettingsClick) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
