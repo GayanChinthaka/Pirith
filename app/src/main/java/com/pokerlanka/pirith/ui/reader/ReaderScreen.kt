@@ -1,5 +1,8 @@
 package com.pokerlanka.pirith.ui.reader
 
+import android.app.Activity
+import android.content.ContextWrapper
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.expandVertically
@@ -34,6 +37,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Translate
@@ -59,12 +65,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -101,6 +109,27 @@ fun ReaderScreen(
     val listState = rememberLazyListState()
     val isDragged by listState.interactionSource.collectIsDraggedAsState()
     var showSettingsSheet by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val activity = remember(context) {
+        var ctx = context
+        while (ctx is ContextWrapper) {
+            if (ctx is Activity) return@remember ctx
+            ctx = ctx.baseContext
+        }
+        null
+    }
+
+    DisposableEffect(activity, uiState.preferences.keepScreenOn) {
+        if (uiState.preferences.keepScreenOn) {
+            activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
 
     // Auto-scroll loop - survives manual drag interruptions via supervisorScope
     LaunchedEffect(uiState.isAutoScrolling, uiState.autoScrollSpeed) {
@@ -678,32 +707,91 @@ fun ReaderSettingsBottomSheet(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                AppTheme.entries.forEach { theme ->
-                    val isSelected = preferences.appTheme == theme
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { onThemeChange(theme) },
-                        label = {
-                            Text(
-                                text = when (theme) {
-                                    AppTheme.SYSTEM -> "පද්ධතිය"
-                                    AppTheme.LIGHT -> "දිවා"
-                                    AppTheme.DARK -> "රාත්‍රී"
-                                    AppTheme.SEPIA -> "සෙපියා"
-                                },
-                                maxLines = 1,
-                                softWrap = false
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(AppTheme.SYSTEM, AppTheme.LIGHT).forEach { theme ->
+                        val isSelected = preferences.appTheme == theme
+                        FilterChip(
+                            modifier = Modifier.weight(1f),
+                            selected = isSelected,
+                            onClick = { onThemeChange(theme) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = when (theme) {
+                                        AppTheme.SYSTEM -> Icons.Default.BrightnessAuto
+                                        else -> Icons.Default.LightMode
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = when (theme) {
+                                        AppTheme.SYSTEM -> if (preferences.showEnglishNames) "පද්ධතිය (System)" else "පද්ධතිය"
+                                        AppTheme.LIGHT -> if (preferences.showEnglishNames) "දිවා (Light)" else "දිවා"
+                                        else -> ""
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
                             )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                         )
-                    )
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(AppTheme.DARK, AppTheme.SEPIA).forEach { theme ->
+                        val isSelected = preferences.appTheme == theme
+                        FilterChip(
+                            modifier = Modifier.weight(1f),
+                            selected = isSelected,
+                            onClick = { onThemeChange(theme) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = when (theme) {
+                                        AppTheme.DARK -> Icons.Default.DarkMode
+                                        else -> Icons.Default.AutoStories
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = when (theme) {
+                                        AppTheme.DARK -> if (preferences.showEnglishNames) "රාත්‍රී (Dark)" else "රාත්‍රී"
+                                        AppTheme.SEPIA -> if (preferences.showEnglishNames) "සෙපියා (Sepia)" else "සෙපියා"
+                                        else -> ""
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        )
+                    }
                 }
             }
 

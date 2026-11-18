@@ -8,12 +8,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +37,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pokerlanka.pirith.domain.model.AppTheme
@@ -97,32 +103,91 @@ fun AppearanceSettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        AppTheme.entries.forEach { theme ->
-                            val isSelected = preferences.appTheme == theme
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.setAppTheme(theme) },
-                                label = {
-                                    Text(
-                                        text = when (theme) {
-                                            AppTheme.SYSTEM -> "පද්ධතිය"
-                                            AppTheme.LIGHT -> "දිවා"
-                                            AppTheme.DARK -> "රාත්‍රී"
-                                            AppTheme.SEPIA -> "සෙපියා"
-                                        },
-                                        maxLines = 1,
-                                        softWrap = false
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            listOf(AppTheme.SYSTEM, AppTheme.LIGHT).forEach { theme ->
+                                val isSelected = preferences.appTheme == theme
+                                FilterChip(
+                                    modifier = Modifier.weight(1f),
+                                    selected = isSelected,
+                                    onClick = { viewModel.setAppTheme(theme) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = when (theme) {
+                                                AppTheme.SYSTEM -> Icons.Default.BrightnessAuto
+                                                else -> Icons.Default.LightMode
+                                            },
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            text = when (theme) {
+                                                AppTheme.SYSTEM -> if (showEnglish) "පද්ධතිය (System)" else "පද්ධතිය"
+                                                AppTheme.LIGHT -> if (showEnglish) "දිවා (Light)" else "දිවා"
+                                                else -> ""
+                                            },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
                                     )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                 )
-                            )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            listOf(AppTheme.DARK, AppTheme.SEPIA).forEach { theme ->
+                                val isSelected = preferences.appTheme == theme
+                                FilterChip(
+                                    modifier = Modifier.weight(1f),
+                                    selected = isSelected,
+                                    onClick = { viewModel.setAppTheme(theme) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = when (theme) {
+                                                AppTheme.DARK -> Icons.Default.DarkMode
+                                                else -> Icons.Default.AutoStories
+                                            },
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            text = when (theme) {
+                                                AppTheme.DARK -> if (showEnglish) "රාත්‍රී (Dark)" else "රාත්‍රී"
+                                                AppTheme.SEPIA -> if (showEnglish) "සෙපියා (Sepia)" else "සෙපියා"
+                                                else -> ""
+                                            },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                )
+                            }
                         }
                     }
                 }
