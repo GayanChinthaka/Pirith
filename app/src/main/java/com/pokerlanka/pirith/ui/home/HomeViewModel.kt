@@ -30,7 +30,7 @@ class HomeViewModel(
     private val standardCategories = listOf(
         "සියල්ල",
         "වන්දනා",
-        "බෝධි පූජා",
+        "බෝධි පූජා කවි",
         "මහා පිරිත්",
         "සෙත් පිරිත්",
         "ප්‍රශ්නෝත්තර සහ භාවනා",
