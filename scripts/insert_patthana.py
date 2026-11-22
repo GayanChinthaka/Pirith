@@ -80,8 +80,8 @@ PACCAYA_VANDANA = [
 
 
 def _build_uddesa_verse(number):
-    pali = "පට්ඨාන පච්චයුද්දේසෝ\n\n" + "\n".join(_PITAKA["uddesa_pali"])
-    sinhala = "පට්ඨාන මාතෘකා පද\n\n" + "\n".join(
+    pali = "\n".join(_PITAKA["uddesa_pali"])
+    sinhala = "\n".join(
         f"{i}. {name}" for i, name in enumerate(_PITAKA["uddesa_sinhala"], 1)
     )
     return (number, pali, sinhala)
@@ -93,7 +93,7 @@ def _build_niddesa_verses(first_number):
     for paccaya, (stem, vandana_sinhala) in zip(_PITAKA["paccaya"], PACCAYA_VANDANA):
         for i, (pali, sinhala) in enumerate(paccaya["blocks"]):
             if i == 0:
-                pali = f"[{paccaya['heading']}]\n{pali}"
+                pali = f"{paccaya['heading']}\n{pali}"
             verses.append((n, pali, sinhala))
             n += 1
         verses.append((
@@ -102,8 +102,6 @@ def _build_niddesa_verses(first_number):
             f"වන්දනාව: {vandana_sinhala}",
         ))
         n += 1
-    pali, sinhala = _PITAKA["closing"]
-    verses.append((n, pali, sinhala))
     return verses
 
 
@@ -111,23 +109,11 @@ PATTHANA_UDDESA_VERSES = [_build_uddesa_verse(5)]
 
 PATTHANA_NIDDESA_AND_GNANA_VERSES = _build_niddesa_verses(6)
 
-PATTHANA_CONCLUSION_VERSES = [
-    (
-        len(PATTHANA_ARAMBHAKA_VERSES) + len(PATTHANA_UDDESA_VERSES) + len(PATTHANA_NIDDESA_AND_GNANA_VERSES) + 1,
-        "සාධු! සාධු! සාධු!\n\n"
-        "ඉමිනා පුඤ්ඤකම්මේන - මා මේ බාලසමාගමෝ,\n"
-        "සතං සමාගමෝ හෝතු - යාව නිබ්බානපත්තියා.",
-        "සාධු! සාධු! සාධු!\n\n"
-        "මේ උතුම් පින් බලයෙන් මට කිසි කලෙකත් අඥානයන්ගේ ඇසුරක් නොවේවා! නිවන් දකින තුරුම උතුම් සත්පුරුෂයන්ගේ ඇසුරම ලැබේවා!"
-    )
-]
-
 # Combined all-in-one verses
 ALL_PATTHANA_VERSES = (
     PATTHANA_ARAMBHAKA_VERSES +
     PATTHANA_UDDESA_VERSES +
-    PATTHANA_NIDDESA_AND_GNANA_VERSES +
-    PATTHANA_CONCLUSION_VERSES
+    PATTHANA_NIDDESA_AND_GNANA_VERSES
 )
 
 def main():

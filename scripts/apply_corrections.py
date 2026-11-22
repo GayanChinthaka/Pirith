@@ -14,6 +14,12 @@ BASE = os.path.dirname(__file__)
 DB_PATH = os.path.join(BASE, "..", "app", "src", "main", "assets", "databases", "pirith.db")
 
 
+def clean_text(text: str) -> str:
+    if not text:
+        return ""
+    return text.replace(r"\xA0", " ").replace(r"\xa0", " ").replace("\u00a0", " ").strip()
+
+
 def main():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -27,7 +33,7 @@ def main():
         cur.execute("DELETE FROM verses WHERE suttaId = ?", (sutta_id,))
         cur.executemany(
             "INSERT INTO verses (suttaId, verseNumber, paliText, sinhalaMeaning) VALUES (?, ?, ?, ?)",
-            [(sutta_id, v["verseNumber"], v["paliText"].strip(), v["sinhalaMeaning"].strip()) for v in data["verses"]],
+            [(sutta_id, v["verseNumber"], clean_text(v["paliText"]), clean_text(v["sinhalaMeaning"])) for v in data["verses"]],
         )
         print(f"Sutta {sutta_id}: {len(data['verses'])} verses")
     conn.commit()

@@ -42,7 +42,7 @@ def clean_sinhala_text(text: str) -> str:
     if not text:
         return ""
     text = text.replace("\u200b", "").replace("\ufeff", "").replace("\r", "")
-    text = text.replace("\u00a0", " ")
+    text = text.replace("\u00a0", " ").replace(r"\xA0", " ").replace(r"\xa0", " ")
     text = re.sub(r"[ \t]+", " ", text)
     lines = [line.strip() for line in text.split("\n")]
     return "\n".join([line for line in lines if line]).strip()
