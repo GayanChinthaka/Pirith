@@ -379,7 +379,7 @@ SUTTAS_CONFIG = [
     {"id": 27, "source": "namo", "slug": "buddha-meditation", "titlePali": "Buddhanussati Bhavana", "titleSinhala": "බුද්ධානුස්සති භාවනාව", "category": "වන්දනා", "orderIndex": 8, "isFavorite": 0},
 
     # --- 2. බෝධි පූජා (Bodhi Puja) ---
-    {"id": 33, "source": "namo_puja_slice", "slug": "buddha-puja", "slice_start": 6, "slice_end": 10, "titlePali": "Bodhi Vandanawa saha Gatha", "titleSinhala": "බෝධි වන්දනාව සහ ගාථා", "category": "බෝධි පූජා", "orderIndex": 9, "isFavorite": 0},
+    {"id": 33, "source": "namo_puja_slice", "slug": "buddha-puja", "slice_start": 6, "slice_end": 10, "titlePali": "Bodhi Vandanawa saha Gatha", "titleSinhala": "බෝධි වන්දනාව සහ ගාථා", "category": "වන්දනා", "orderIndex": 9, "isFavorite": 0},
 
     # --- 3. මහා පිරිත් (Maha Pirith) ---
     {"id": 4, "source": "pitaka_mahamangala", "key": "08-mahamangala", "titlePali": "Maha Mangala Suttam", "titleSinhala": "මහා මංගල සූත්‍රය", "category": "මහා පිරිත්", "orderIndex": 10, "isFavorite": 0},

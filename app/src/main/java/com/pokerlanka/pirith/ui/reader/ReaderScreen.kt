@@ -68,6 +68,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,7 +77,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -109,6 +112,35 @@ fun ReaderScreen(
     val listState = rememberLazyListState()
     val isDragged by listState.interactionSource.collectIsDraggedAsState()
     var showSettingsSheet by remember { mutableStateOf(false) }
+
+    val scrollProgress by remember {
+        derivedStateOf {
+            val versesCount = uiState.verses.size
+            if (versesCount == 0) return@derivedStateOf 0f
+
+            val layoutInfo = listState.layoutInfo
+            val visibleItems = layoutInfo.visibleItemsInfo
+            if (visibleItems.isEmpty()) return@derivedStateOf 0f
+
+            // Top of the list
+            if (!listState.canScrollBackward && listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0) {
+                return@derivedStateOf 0f
+            }
+
+            // Bottom of the list
+            if (!listState.canScrollForward) {
+                return@derivedStateOf 1f
+            }
+
+            val firstVisible = visibleItems.firstOrNull { it.index == listState.firstVisibleItemIndex } ?: visibleItems.first()
+            val firstItemSize = firstVisible.size.toFloat().coerceAtLeast(1f)
+            val offsetFraction = (listState.firstVisibleItemScrollOffset.toFloat() / firstItemSize).coerceIn(0f, 1f)
+            val currentPosition = listState.firstVisibleItemIndex.toFloat() + offsetFraction
+
+            val maxScrollable = versesCount.toFloat().coerceAtLeast(1f)
+            (currentPosition / maxScrollable).coerceIn(0f, 1f)
+        }
+    }
 
     val context = LocalContext.current
     val activity = remember(context) {
@@ -154,55 +186,63 @@ fun ReaderScreen(
     PirithTheme(appTheme = uiState.preferences.appTheme) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = {
-                        Column {
-                            Text(
-                                text = uiState.sutta?.titleSinhala ?: "පිරිත් සූත්‍රය",
-                                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1
-                            )
-                            if (uiState.preferences.showEnglishNames) {
-                                uiState.sutta?.let {
-                                    if (it.titlePali.isNotBlank()) {
-                                        Text(
-                                            text = it.titlePali,
-                                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 1
-                                        )
+                Column {
+                    TopAppBar(
+                        title = {
+                            Column {
+                                Text(
+                                    text = uiState.sutta?.titleSinhala ?: "පිරිත් සූත්‍රය",
+                                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1
+                                )
+                                if (uiState.preferences.showEnglishNames) {
+                                    uiState.sutta?.let {
+                                        if (it.titlePali.isNotBlank()) {
+                                            Text(
+                                                text = it.titlePali,
+                                                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    },
-                    actions = {
-                        // Auto Scroll Toggle
-                        IconButton(onClick = { viewModel.toggleAutoScroll() }) {
-                            Icon(
-                                imageVector = if (uiState.isAutoScrolling) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                contentDescription = if (uiState.isAutoScrolling) "Pause Auto-Scroll" else "Start Auto-Scroll",
-                                tint = if (uiState.isAutoScrolling) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            }
+                        },
+                        actions = {
+                            // Auto Scroll Toggle
+                            IconButton(onClick = { viewModel.toggleAutoScroll() }) {
+                                Icon(
+                                    imageVector = if (uiState.isAutoScrolling) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                    contentDescription = if (uiState.isAutoScrolling) "Pause Auto-Scroll" else "Start Auto-Scroll",
+                                    tint = if (uiState.isAutoScrolling) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
 
-                        // Reader Settings Sheet Button
-                        IconButton(onClick = { showSettingsSheet = true }) {
-                            Icon(Icons.Default.Tune, contentDescription = "Reader Settings")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background
+                            // Reader Settings Sheet Button
+                            IconButton(onClick = { showSettingsSheet = true }) {
+                                Icon(Icons.Default.Tune, contentDescription = "Reader Settings")
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.background
+                        )
                     )
-                )
+
+                    if (!uiState.isLoading && uiState.sutta != null) {
+                        ReaderScrollProgressBar(
+                            progressProvider = { scrollProgress }
+                        )
+                    }
+                }
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { innerPadding ->
@@ -291,6 +331,35 @@ fun ReaderScreen(
             }
         }
     }
+}
+
+@Composable
+fun ReaderScrollProgressBar(
+    progressProvider: () -> Float,
+    modifier: Modifier = Modifier
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(2.5.dp)
+            .background(trackColor)
+            .drawWithContent {
+                drawContent()
+                val progress = progressProvider().coerceIn(0f, 1f)
+                if (progress > 0f) {
+                    drawRect(
+                        color = primaryColor,
+                        size = Size(
+                            width = size.width * progress,
+                            height = size.height
+                        )
+                    )
+                }
+            }
+    )
 }
 
 @Composable

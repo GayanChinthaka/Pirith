@@ -9,7 +9,7 @@ import com.pokerlanka.pirith.data.local.entity.VerseEntity
 
 @Database(
     entities = [SuttaEntity::class, VerseEntity::class],
-    version = 15,
+    version = 17,
     exportSchema = false
 )
 abstract class PirithDatabase : RoomDatabase() {
